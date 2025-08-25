@@ -77,7 +77,11 @@ async function sendEmailWithResend({ from, to, subject, html }: {
   subject: string;
   html: string;
 }) {
-  const RESEND_API_KEY = 're_KVqsc65u_pxYtgFeKtfypzKcpbvPS4RiK';
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY environment variable is not configured');
+  }
   
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
