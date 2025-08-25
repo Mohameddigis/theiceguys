@@ -83,6 +83,15 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const createDriver = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Vérifier que l'utilisateur est bien admin
+      const adminEmail = 'commandes@glaconsmarrakech.com';
+      const isAdmin = localStorage.getItem('admin_authenticated') === 'true';
+      
+      if (!isAdmin) {
+        alert('Accès refusé : Seuls les administrateurs peuvent créer des livreurs');
+        return;
+      }
+
       await driverService.createDriver({
         ...newDriver,
         password_hash: newDriver.password, // En production, il faudrait hasher le mot de passe
