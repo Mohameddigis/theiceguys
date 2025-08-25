@@ -41,10 +41,74 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
+      // Find the order to get customer details
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        console.error('Commande non trouvée');
+        return;
+      }
+
+      // Update status in database
       await orderService.updateOrderStatus(orderId, newStatus);
+      
+      // Send notification email
+      await sendStatusNotification(order, newStatus);
+      
+      // Reload orders
       await loadOrders(); // Recharger les données
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
+    }
+  };
+
+  const sendStatusNotification = async (order: Order, newStatus: Order['status']) => {
+    try {
+      // Prepare order details for notification
+      const orderDetails = {
+        items: order.order_items?.map(item => ({
+          iceType: item.ice_type,
+          quantities: {
+            '5kg': item.package_size === '5kg' ? item.quantity : 0,
+            '10kg': item.package_size === '10kg' ? item.quantity : 0,
+            '20kg': item.package_size === '20kg' ? item.quantity : 0,
+          },
+          totalPrice: item.total_price
+        })) || [],
+        deliveryInfo: {
+          type: order.delivery_type,
+          date: order.delivery_date,
+          time: order.delivery_time,
+          address: order.delivery_address
+        },
+        total: order.total,
+        customerType: order.customer?.type || 'individual',
+        companyName: order.customer?.type === 'professional' ? order.customer.name : undefined
+      };
+
+      const notificationData = {
+        customerEmail: order.customer?.email,
+        customerName: order.customer?.contact_name || order.customer?.name,
+        orderNumber: order.order_number,
+        newStatus: newStatus,
+        orderDetails: orderDetails
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-status-notification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(notificationData)
+      });
+
+      if (response.ok) {
+        console.log('Notification de statut envoyée avec succès');
+      } else {
+        console.error('Erreur lors de l\'envoi de la notification de statut');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de la notification:', error);
     }
   };
 
