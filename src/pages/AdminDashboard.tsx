@@ -83,15 +83,43 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const createDriver = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Vérifier que l'utilisateur est bien admin
-      const adminEmail = 'commandes@glaconsmarrakech.com';
-      const isAdmin = localStorage.getItem('admin_authenticated') === 'true';
+      // Call the Edge Function to create driver securely
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-driver`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newDriver.name,
+          phone: newDriver.phone,
+          email: newDriver.email,
+          password_hash: newDriver.password,
+          is_active: true,
+          current_status: 'offline',
+          adminSecret: 'Glaconsmarrakech2025.'
+        })
+      });
+
+      const result = await response.json();
       
-      if (!isAdmin) {
-        alert('Accès refusé : Seuls les administrateurs peuvent créer des livreurs');
-        return;
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
+      // Reset form and reload drivers
+      setNewDriver({ name: '', phone: '', email: '', password: '' });
+      await loadDrivers();
+      alert('Livreur créé avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de la création du livreur:', error);
+      alert('Erreur lors de la création du livreur');
+    }
+  };
+
+  const createDriverOld = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
       await driverService.createDriver({
         name: newDriver.name,
         phone: newDriver.phone,
