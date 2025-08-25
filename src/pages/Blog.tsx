@@ -154,7 +154,7 @@ function Blog() {
       excerpt: 'Découvrez nos initiatives environnementales et notre approche durable de la production de glaçons.',
       content: `
         <h2>Production Responsable</h2>
-        <p>Chez Glaçons Marrakech, nous sommes conscients de notre responsabilité environnementale. Découvrez nos initiatives pour une production plus durable.</p>
+        <p>Chez The Ice Guys, nous sommes conscients de notre responsabilité environnementale. Découvrez nos initiatives pour une production plus durable.</p>
         
         <h3>Économie d'Énergie</h3>
         <p>Nos installations utilisent des technologies de pointe pour réduire la consommation énergétique de 30% par rapport aux méthodes traditionnelles.</p>
