@@ -35,7 +35,7 @@ function Header({ currentPage, onPageChange }: HeaderProps) {
             >
               <img
                 src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20Noour%20(500%20x%20150%20px)%20(3).png"
-                alt="The Ice Guys"
+                alt="Glaçons Marrakech"
                 className="h-16 w-auto"
               />
             </button>

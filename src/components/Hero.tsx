@@ -257,7 +257,7 @@ function Hero({ onOrderClick }: HeroProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Prêt à passer commande ?</h2>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Rejoignez nos clients satisfaits et découvrez la qualité The Ice Guys. 
+            Rejoignez nos clients satisfaits et découvrez la qualité Glaçons Marrakech.
             Commandez dès maintenant ou contactez-nous pour plus d'informations.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">

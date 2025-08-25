@@ -10,11 +10,11 @@ function Footer() {
           <div className="lg:col-span-2">
             <img 
               src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20Noour%20(500%20x%20150%20px)%20(3).png"
-              alt="The Ice Guys"
+              alt="Glaçons Marrakech"
               className="h-12 w-auto mb-4"
             />
             <p className="text-slate-300 mb-4 max-w-md">
-              Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech. 
+              Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.
               Livraison rapide pour professionnels et particuliers.
             </p>
             <div className="flex space-x-4">

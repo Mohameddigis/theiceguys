@@ -140,7 +140,7 @@ function About() {
         <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-8 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Prêt à passer commande ?</h2>
           <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-            Rejoignez nos clients satisfaits et découvrez la qualité The Ice Guys. 
+            Rejoignez nos clients satisfaits et découvrez la qualité Glaçons Marrakech.
             Commandez dès maintenant ou contactez-nous pour plus d'informations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
