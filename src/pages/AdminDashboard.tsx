@@ -49,6 +49,14 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     loadOrders();
     loadDrivers();
     loadDriverLocations();
+    
+    // Actualiser les données toutes les 30 secondes
+    const interval = setInterval(() => {
+      loadOrders();
+      loadDrivers();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const authenticateAdmin = async () => {
@@ -165,34 +173,11 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const assignDriverToOrder = async (orderId: string, driverId: string) => {
     try {
       await driverService.assignDriverToOrder(orderId, driverId);
-      
-      // Find the driver info
-      const driver = drivers.find(d => d.id === driverId);
-      
-      // Update local state immediately
-      setOrders(prevOrders => 
-        prevOrders.map(o => 
-          o.id === orderId 
-            ? { ...o, assigned_driver_id: driverId, assigned_driver: driver }
-            : o
-        )
-      );
-      
-      // Update selected order if it's the one being updated
-      if (selectedOrder?.id === orderId) {
-        setSelectedOrder(prev => prev ? { 
-          ...prev, 
-          assigned_driver_id: driverId,
-          assigned_driver: driver 
-        } : null);
-      }
-      
+      await loadOrders();
       alert('Livreur assigné avec succès !');
     } catch (error) {
       console.error('Erreur lors de l\'assignation:', error);
       alert('Erreur lors de l\'assignation du livreur');
-      // Reload orders on error
-      await loadOrders();
     }
   };
 

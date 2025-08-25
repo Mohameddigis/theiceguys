@@ -311,7 +311,7 @@ export const driverService = {
         assigned_driver:delivery_drivers(*)
       `)
       .eq('assigned_driver_id', driverId)
-      .in('status', ['confirmed', 'preparing', 'delivering'])
+      .in('status', ['confirmed', 'delivering'])
       .order('delivery_type', { ascending: false }) // Express en premier
       .order('created_at', { ascending: true });
 

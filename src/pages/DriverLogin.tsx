@@ -61,6 +61,12 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
       localStorage.setItem('driver_name', driverData.name);
       localStorage.setItem('driver_login_time', Date.now().toString());
       
+      // Mettre le statut du livreur à "available" lors de la connexion
+      await supabase
+        .from('delivery_drivers')
+        .update({ current_status: 'available' })
+        .eq('id', driverData.id);
+      
       onLogin(driverData.id, driverData.name);
     } catch (error) {
       console.error('Erreur de connexion:', error);
