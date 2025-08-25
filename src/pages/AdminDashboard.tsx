@@ -64,10 +64,14 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const loadDrivers = async () => {
     try {
+      console.log('Chargement des livreurs...');
       const data = await driverService.getAllDrivers();
+      console.log('Livreurs récupérés:', data);
       setDrivers(data);
     } catch (error) {
       console.error('Erreur lors du chargement des livreurs:', error);
+      // Essayer de récupérer avec plus de détails sur l'erreur
+      console.error('Détails de l\'erreur:', error.message, error.details);
     }
   };
 

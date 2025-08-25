@@ -201,11 +201,13 @@ export const orderService = {
 export const driverService = {
   // Récupérer tous les livreurs
   async getAllDrivers() {
+    console.log('Service: Récupération des livreurs...');
     const { data, error } = await supabase
       .from('delivery_drivers')
       .select('*')
       .order('name');
 
+    console.log('Supabase response:', { data, error });
     if (error) throw error;
     return data;
   },
