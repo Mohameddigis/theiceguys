@@ -175,7 +175,7 @@ function Blog() {
         <h3>Engagement Communautaire</h3>
         <p>Nous soutenons les initiatives locales de préservation de l'environnement à Marrakech et sensibilisons nos clients aux bonnes pratiques.</p>
       `,
-      author: 'Direction Glaçons Marrakech',
+      author: 'Direction The Ice Guys',
       author: 'Direction The Ice Guys',
       date: '2023-12-20',
       readTime: '4 min',
