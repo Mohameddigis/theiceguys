@@ -100,7 +100,17 @@ function Hero({ onOrderClick }: HeroProps) {
           {/* Main content */}
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="w-[90%] mx-auto text-5xl sm:text-6xl lg:text-8xl font-bold leading-tight drop-shadow-lg">
+              {/* Mobile: Image logo */}
+              <div className="block sm:hidden">
+                <img 
+                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/icon%20ice%20guys.png"
+                  alt="The Ice Guys"
+                  className="w-48 h-auto mx-auto drop-shadow-lg"
+                />
+              </div>
+              
+              {/* Desktop: Text title */}
+              <h1 className="hidden sm:block w-[90%] mx-auto text-5xl sm:text-6xl lg:text-8xl font-bold leading-tight drop-shadow-lg">
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-light to-brand-secondary">
                   GLAÇONS
                 </span>
