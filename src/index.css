@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mapbox Geocoder Custom Styles */
+.mapbox-geocoder-container .mapboxgl-ctrl-geocoder {
+  width: 100% !important;
+  max-width: none !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: none !important;
+  font-size: 0.875rem !important;
+}
+
+.mapbox-geocoder-container .mapboxgl-ctrl-geocoder input {
+  padding: 0.75rem !important;
+  border: none !important;
+  font-size: 0.875rem !important;
+}
+
+.mapbox-geocoder-container .mapboxgl-ctrl-geocoder input:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #2595c3 !important;
+}
+
+.mapbox-geocoder-container .suggestions {
+  border-radius: 0.5rem !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mapbox-geocoder-container .suggestions > li > a {
+  padding: 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+.mapbox-geocoder-container .suggestions > li > a:hover {
+  background-color: #f8fafc !important;
+}
