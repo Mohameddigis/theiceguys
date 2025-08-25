@@ -80,7 +80,7 @@ export const orderService = {
         .select('*')
         .eq('email', orderData.customer.email)
         .eq('phone', orderData.customer.phone)
-        .single();
+        .maybeSingle();
 
       if (existingCustomer) {
         customer = existingCustomer;
