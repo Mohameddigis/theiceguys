@@ -3,6 +3,7 @@ import { ArrowLeft, Users, Package, Truck, Clock, MapPin, User, Phone, Mail, Mes
 import MapboxGeocoderComponent from '../components/MapboxGeocoder';
 import MapboxMap from '../components/MapboxMap';
 import { checkDeliveryZone, getDeliveryZoneMessage } from '../utils/deliveryZone';
+import { orderService } from '../lib/supabase';
 
 interface IndividualOrderPageProps {
   onBack: () => void;
@@ -209,10 +210,85 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const handleWhatsAppOrder = () => {
     const message = generateWhatsAppMessage();
     
-    // Send confirmation email
-    sendOrderConfirmationEmail();
-    
-    window.open(`https://wa.me/212693675981?text=${message}`, '_blank');
+    // Save order to database first, then send email and WhatsApp
+    saveOrderToDatabase()
+      .then(() => {
+        // Send confirmation email
+        sendOrderConfirmationEmail();
+        
+        // Open WhatsApp
+        window.open(`https://wa.me/212693675981?text=${message}`, '_blank');
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la sauvegarde:', error);
+        // Still allow WhatsApp even if database save fails
+        alert('Commande envoyée mais non sauvegardée. Veuillez contacter le support.');
+        window.open(`https://wa.me/212693675981?text=${message}`, '_blank');
+      });
+  };
+
+  const saveOrderToDatabase = async () => {
+    try {
+      const orderData = {
+        customer: {
+          type: 'individual' as const,
+          name: customerInfo.name,
+          contact_name: null,
+          phone: customerInfo.phone,
+          email: customerInfo.email
+        },
+        order: {
+          status: 'pending' as const,
+          delivery_type: isExpressDelivery ? 'express' as const : 'standard' as const,
+          delivery_date: isExpressDelivery ? null : deliveryInfo.date,
+          delivery_time: isExpressDelivery ? null : deliveryInfo.time,
+          delivery_address: deliveryInfo.address,
+          delivery_coordinates: deliveryInfo.coordinates,
+          notes: customerInfo.notes || null,
+          subtotal: calculateTotal() - (isExpressDelivery ? 100 : 0),
+          delivery_fee: isExpressDelivery ? 100 : 0,
+          total: calculateTotal()
+        },
+        items: selectedItems.flatMap(item => {
+          const items = [];
+          if (item.quantities['5kg'] > 0) {
+            items.push({
+              ice_type: item.iceType.id as 'nuggets' | 'gourmet' | 'cubique',
+              package_size: '5kg' as const,
+              quantity: item.quantities['5kg'],
+              unit_price: item.iceType.price5kg,
+              total_price: item.quantities['5kg'] * item.iceType.price5kg
+            });
+          }
+          if (item.quantities['10kg'] > 0) {
+            items.push({
+              ice_type: item.iceType.id as 'nuggets' | 'gourmet' | 'cubique',
+              package_size: '10kg' as const,
+              quantity: item.quantities['10kg'],
+              unit_price: item.iceType.price10kg,
+              total_price: item.quantities['10kg'] * item.iceType.price10kg
+            });
+          }
+          if (item.quantities['20kg'] > 0) {
+            items.push({
+              ice_type: item.iceType.id as 'nuggets' | 'gourmet' | 'cubique',
+              package_size: '20kg' as const,
+              quantity: item.quantities['20kg'],
+              unit_price: item.iceType.price20kg,
+              total_price: item.quantities['20kg'] * item.iceType.price20kg
+            });
+          }
+          return items;
+        })
+      };
+
+      const savedOrder = await orderService.createOrder(orderData);
+      console.log('Commande sauvegardée:', savedOrder);
+      return savedOrder;
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de la commande:', error);
+      throw error;
+    }
   };
 
   const sendOrderConfirmationEmail = async () => {

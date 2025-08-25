@@ -45,7 +45,7 @@ export interface OrderItem {
   id: string;
   order_id: string;
   ice_type: 'nuggets' | 'gourmet' | 'cubique';
-  package_size: '5kg' | '10kg' | '20kg';
+  package_size: '5kg' | '20kg';
   quantity: number;
   unit_price: number;
   total_price: number;
