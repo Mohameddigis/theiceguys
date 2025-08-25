@@ -70,8 +70,11 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       setDrivers(data);
     } catch (error) {
       console.error('Erreur lors du chargement des livreurs:', error);
-      // Essayer de récupérer avec plus de détails sur l'erreur
-      console.error('Détails de l\'erreur:', error.message, error.details);
+      console.error('Détails de l\'erreur:', error);
+      // Afficher une alerte pour diagnostiquer
+      alert(`Erreur de chargement des livreurs: ${error.message || error}`);
+      // Initialiser avec un tableau vide pour éviter les erreurs
+      setDrivers([]);
     }
   };
 

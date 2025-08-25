@@ -202,14 +202,25 @@ export const driverService = {
   // Récupérer tous les livreurs
   async getAllDrivers() {
     console.log('Service: Récupération des livreurs...');
-    const { data, error } = await supabase
-      .from('delivery_drivers')
-      .select('*')
-      .order('name');
+    try {
+      const { data, error } = await supabase
+        .from('delivery_drivers')
+        .select('*')
+        .order('name');
 
-    console.log('Supabase response:', { data, error });
-    if (error) throw error;
-    return data;
+      console.log('Supabase response:', { data, error });
+      
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw new Error(`Erreur lors de la récupération des livreurs: ${error.message}`);
+      }
+      
+      console.log('Livreurs récupérés avec succès:', data?.length || 0);
+      return data || [];
+    } catch (error) {
+      console.error('Erreur dans getAllDrivers:', error);
+      throw error;
+    }
   },
 
   // Créer un nouveau livreur
