@@ -22,7 +22,7 @@ function Blog() {
       excerpt: 'Découvrez les caractéristiques uniques de chaque type de glaçon et comment choisir le bon pour votre établissement.',
       content: `
         <h2>Introduction aux Types de Glaçons</h2>
-        <p>Dans l'industrie de la restauration et de l'hôtellerie à Marrakech, le choix du bon type de glaçon peut faire toute la différence dans l'expérience client. Chez Glaçons Marrakech, nous proposons trois types principaux de glaçons, chacun ayant ses propres avantages.</p>
+        <p>Dans l'industrie de la restauration et de l'hôtellerie à Marrakech, le choix du bon type de glaçon peut faire toute la différence dans l'expérience client. Chez The Ice Guys, nous proposons trois types principaux de glaçons, chacun ayant ses propres avantages.</p>
         
         <h3>1. Glaçons Nugget's - Les Favoris des Cocktails</h3>
         <p>Les glaçons Nugget's, également appelés glaçons en pépites, sont parfaits pour les cocktails et boissons premium. Leur forme unique permet une fonte lente et uniforme, préservant ainsi le goût de vos boissons plus longtemps.</p>
