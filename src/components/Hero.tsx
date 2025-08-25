@@ -70,7 +70,7 @@ function Hero({ onOrderClick }: HeroProps) {
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url(https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/000341.webp)'
+              backgroundImage: 'url(https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/1.Cube-Seul-5x5x5.jpg)'
             }}
           ></div>
           {/* Dark overlay for better text readability */}
