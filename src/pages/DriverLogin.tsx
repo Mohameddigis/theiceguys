@@ -194,5 +194,3 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
 }
 
 export default DriverLogin;
-
-export default DriverLogin
