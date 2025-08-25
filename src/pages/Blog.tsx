@@ -72,7 +72,7 @@ function Blog() {
         <h3>Bonnes Pratiques</h3>
         <p>Évitez les variations de température, utilisez des contenants propres, et respectez la règle du "premier entré, premier sorti" pour une rotation optimale.</p>
       `,
-      author: 'Expert Glaçons Marrakech',
+      author: 'Expert The Ice Guys',
       author: 'Expert The Ice Guys',
       date: '2024-01-10',
       readTime: '4 min',
