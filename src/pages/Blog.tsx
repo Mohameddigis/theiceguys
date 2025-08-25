@@ -42,7 +42,7 @@ function Blog() {
         <h2>Comment Choisir le Bon Type ?</h2>
         <p>Le choix dépend de plusieurs facteurs : type d'établissement, clientèle cible, budget, et volume de consommation. Contactez-nous pour des conseils personnalisés.</p>
       `,
-      author: 'Équipe Glaçons Marrakech',
+      author: 'Équipe The Ice Guys',
       author: 'Équipe The Ice Guys',
       date: '2024-01-15',
       readTime: '5 min',
