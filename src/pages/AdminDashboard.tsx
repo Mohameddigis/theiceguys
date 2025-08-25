@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut } from 'lucide-react';
+import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, Download } from 'lucide-react';
 import { orderService, Order, Customer } from '../lib/supabase';
+import { generateOrderPDF } from '../utils/pdfGenerator';
 
 interface AdminDashboardProps {
   onBack: () => void; // This will now handle logout
@@ -13,6 +14,15 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+
+  const handleDownloadPDF = async (order: Order) => {
+    try {
+      await generateOrderPDF(order);
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      alert('Erreur lors de la génération du bon de commande');
+    }
+  };
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -322,6 +332,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
             {/* Actions rapides */}
             <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                onClick={() => handleDownloadPDF(selectedOrder)}
+                className="bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span>Télécharger PDF</span>
+              </button>
               <a
                 href={`https://wa.me/${selectedOrder.customer?.phone?.replace(/\D/g, '')}`}
                 target="_blank"
@@ -581,15 +598,25 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setTimeout(scrollToTop, 100);
-                          }}
-                          className="text-brand-primary hover:text-brand-secondary transition-colors"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setTimeout(scrollToTop, 100);
+                            }}
+                            className="text-brand-primary hover:text-brand-secondary transition-colors"
+                            title="Voir les détails"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadPDF(order)}
+                            className="text-green-600 hover:text-green-700 transition-colors"
+                            title="Télécharger le bon de commande"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
