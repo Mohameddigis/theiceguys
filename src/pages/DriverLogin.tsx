@@ -170,16 +170,6 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
             </button>
           </form>
 
-          {/* Test accounts info */}
-          <div className="mt-6 p-4 bg-green-50 rounded-lg">
-            <h3 className="text-sm font-medium text-green-800 mb-2">Comptes de test :</h3>
-            <div className="text-xs text-green-700 space-y-1">
-              <p>• ahmed.livreur@glaconsmarrakech.com / Ahmed2025</p>
-              <p>• youssef.livreur@glaconsmarrakech.com / Youssef2025</p>
-              <p>• omar.livreur@glaconsmarrakech.com / Omar2025</p>
-            </div>
-          </div>
-
           {/* Back button */}
           <div className="mt-6 pt-6 border-t border-slate-200">
             <button
