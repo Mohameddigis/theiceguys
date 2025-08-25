@@ -341,20 +341,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             {/* Formulaire d'ajout de livreur */}
             <div className="mb-8 p-6 bg-green-50 rounded-lg">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Ajouter un nouveau livreur</h2>
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Debug Info:</strong> {drivers.length} livreur(s) chargé(s)
-                </p>
-                <button
-                  onClick={() => {
-                    console.log('🔄 Rechargement manuel des livreurs...');
-                    loadDrivers();
-                  }}
-                  className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Recharger les livreurs
-                </button>
-              </div>
               <form onSubmit={createDriver} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
