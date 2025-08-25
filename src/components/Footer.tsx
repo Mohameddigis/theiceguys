@@ -38,27 +38,6 @@ function Footer() {
                 <div>
                   <p className="text-slate-300">Chrifia, Marrakech</p>
                   <p className="text-slate-400 text-sm">Maroc</p>
-                    <div className="mt-4">
-                      <button
-                        onClick={() => {
-                          window.location.hash = 'admin';
-                          window.location.reload();
-                        }}
-                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
-                      >
-                        Administration
-                      </button>
-                      <span className="text-slate-500 mx-2">•</span>
-                      <button
-                        onClick={() => {
-                          window.location.hash = 'driver';
-                          window.location.reload();
-                        }}
-                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
-                      >
-                        Espace Livreur
-                      </button>
-                    </div>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
