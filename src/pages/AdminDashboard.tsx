@@ -155,32 +155,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       // Reset form and reload drivers
       setNewDriver({ name: '', phone: '', email: '', password: '' });
       await loadDrivers();
-      alert('Livreur créé avec succès !');
+      alert(`Livreur créé avec succès !\nUtilisateur Auth ID: ${result.data.auth_user_id}\n${result.message}`);
     } catch (error) {
       console.error('Erreur lors de la création du livreur:', error);
-      alert('Erreur lors de la création du livreur');
+      alert(`Erreur lors de la création du livreur: ${error.message}`);
     }
   };
 
-  const createDriverOld = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await driverService.createDriver({
-        name: newDriver.name,
-        phone: newDriver.phone,
-        email: newDriver.email,
-        password_hash: newDriver.password, // En production, il faudrait hasher le mot de passe
-        is_active: true,
-        current_status: 'offline'
-      });
-      setNewDriver({ name: '', phone: '', email: '', password: '' });
-      await loadDrivers();
-      alert('Livreur créé avec succès !');
-    } catch (error) {
-      console.error('Erreur lors de la création du livreur:', error);
-      alert('Erreur lors de la création du livreur');
-    }
-  };
 
   const assignDriverToOrder = async (orderId: string, driverId: string) => {
     try {

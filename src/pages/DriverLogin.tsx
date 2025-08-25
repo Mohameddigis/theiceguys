@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Truck, Mail, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface DriverLoginProps {
   onLogin: (driverId: string, driverName: string) => void;
@@ -27,25 +28,46 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
     setLoading(true);
     setError('');
 
-    // Simulate loading delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Authenticate with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password
+      });
 
-    const driver = TEST_DRIVERS.find(d => 
-      d.email === credentials.email && d.password === credentials.password
-    );
+      if (error) {
+        setError('Email ou mot de passe incorrect');
+        setLoading(false);
+        return;
+      }
 
-    if (driver) {
+      // Get driver info from delivery_drivers table
+      const { data: driverData, error: driverError } = await supabase
+        .from('delivery_drivers')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (driverError || !driverData) {
+        setError('Profil livreur non trouvé');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
       // Store driver session
       localStorage.setItem('driver_authenticated', 'true');
-      localStorage.setItem('driver_id', driver.id);
-      localStorage.setItem('driver_name', driver.name);
+      localStorage.setItem('driver_id', driverData.id);
+      localStorage.setItem('driver_name', driverData.name);
       localStorage.setItem('driver_login_time', Date.now().toString());
-      onLogin(driver.id, driver.name);
-    } else {
-      setError('Email ou mot de passe incorrect');
+      
+      onLogin(driverData.id, driverData.name);
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      setError('Erreur de connexion');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
