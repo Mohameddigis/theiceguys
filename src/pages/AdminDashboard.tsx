@@ -188,10 +188,21 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       // Send notification email
       await sendStatusNotification(order, newStatus);
       
-      // Reload orders
-      await loadOrders(); // Recharger les données
+      // Update local state immediately
+      setOrders(prevOrders => 
+        prevOrders.map(o => 
+          o.id === orderId ? { ...o, status: newStatus } : o
+        )
+      );
+      
+      // Update selected order if it's the one being updated
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
+      // Reload orders on error
+      await loadOrders();
     }
   };
 
