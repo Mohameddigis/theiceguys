@@ -138,7 +138,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
           name: newDriver.name,
           phone: newDriver.phone,
           email: newDriver.email,
-          password_hash: newDriver.password,
+          password: newDriver.password,
           is_active: true,
           current_status: 'offline',
           adminSecret: 'Glaconsmarrakech2025.'

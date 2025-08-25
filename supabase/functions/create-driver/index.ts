@@ -10,7 +10,7 @@ interface CreateDriverRequest {
   name: string;
   phone: string;
   email: string;
-  password_hash: string;
+  password: string;
   is_active: boolean;
   current_status: 'offline' | 'available' | 'busy' | 'on_break';
   adminSecret: string;
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, phone, email, password_hash, is_active, current_status, adminSecret }: CreateDriverRequest = await req.json()
+    const { name, phone, email, password, is_active, current_status, adminSecret }: CreateDriverRequest = await req.json()
 
     // Verify admin secret
     if (adminSecret !== 'Glaconsmarrakech2025.') {
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     console.log('Creating user in Supabase Auth...')
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email,
-      password: password_hash,
+      password: password,
       email_confirm: true, // Auto-confirm email
       user_metadata: {
         name,
@@ -93,7 +93,6 @@ Deno.serve(async (req) => {
         name,
         phone,
         email,
-        password_hash,
         is_active,
         current_status
       }])

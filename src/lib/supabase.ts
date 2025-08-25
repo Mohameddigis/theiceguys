@@ -15,7 +15,6 @@ export interface DeliveryDriver {
   name: string;
   phone: string;
   email: string;
-  password_hash: string;
   is_active: boolean;
   current_status: 'offline' | 'available' | 'busy' | 'on_break';
   created_at: string;
