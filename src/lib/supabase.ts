@@ -93,7 +93,11 @@ export const orderService = {
         .from('orders')
         .insert([{
           ...orderData.order,
-          customer_id: customer.id
+          customer_id: customer.id,
+          // Convertir les coordonnées au format PostgreSQL point (longitude,latitude)
+          delivery_coordinates: orderData.order.delivery_coordinates 
+            ? `(${orderData.order.delivery_coordinates[0]},${orderData.order.delivery_coordinates[1]})`
+            : null
         }])
         .select()
         .single();
