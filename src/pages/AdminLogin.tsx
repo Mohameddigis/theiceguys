@@ -16,7 +16,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [loading, setLoading] = useState(false);
 
   const ADMIN_EMAIL = 'commandes@glaconsmarrakech.com';
-  const ADMIN_PASSWORD = 'Glaconsmarrakech2025.';
+  const ADMIN_PASSWORD = 'Glaconmarrakech2025.';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
