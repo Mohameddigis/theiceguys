@@ -210,8 +210,17 @@ export const driverService = {
       console.log('🔑 Expected admin ID:', '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
       console.log('✅ Is admin?', user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
       
-      // Essayer d'abord sans authentification (pour tester la table)
-      console.log('🔧 Test 1: Query without auth context...');
+      // Si pas d'utilisateur authentifié, essayer une approche alternative
+      if (!user) {
+        console.log('⚠️ Aucun utilisateur authentifié, tentative de récupération alternative...');
+        
+        // Utiliser une approche sans RLS via une fonction edge ou service role
+        // Pour l'instant, retourner un tableau vide et demander l'authentification
+        console.log('❌ Authentification requise pour accéder aux livreurs');
+        return [];
+      }
+      
+      console.log('🔧 Requête avec utilisateur authentifié...');
       const { data, error } = await supabase
         .from('delivery_drivers')
         .select('*')
@@ -226,16 +235,6 @@ export const driverService = {
       
       if (error) {
         console.error('❌ Erreur Supabase:', error);
-        
-        // Si erreur d'authentification, essayer avec une approche différente
-        if (error.code === 'PGRST301' || error.message.includes('permission')) {
-          console.log('🔧 Test 2: Trying with service role approach...');
-          
-          // Créer un client temporaire avec la clé de service si disponible
-          // En production, cela devrait passer par une Edge Function
-          return [];
-        }
-        
         throw error;
       }
       

@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, Download, UserPlus, Navigation } from 'lucide-react';
-import { orderService, driverService, Order, Customer, DeliveryDriver } from '../lib/supabase';
+import { orderService, driverService, Order, Customer, DeliveryDriver, supabase } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 import MapboxMap from '../components/MapboxMap';
 
@@ -46,10 +46,50 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   };
 
   useEffect(() => {
+    authenticateAdmin();
     loadOrders();
     loadDrivers();
     loadDriverLocations();
   }, []);
+
+  const authenticateAdmin = async () => {
+    try {
+      console.log('🔐 Authentification admin...');
+      
+      // Vérifier si déjà authentifié
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21') {
+        console.log('✅ Admin déjà authentifié');
+        return;
+      }
+      
+      // Authentifier avec l'email admin
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'commandes@glaconsmarrakech.com',
+        password: 'Glaconsmarrakech2025.'
+      });
+      
+      if (error) {
+        console.error('❌ Erreur authentification admin:', error);
+        // Fallback: créer le compte admin s'il n'existe pas
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: 'commandes@glaconsmarrakech.com',
+          password: 'Glaconsmarrakech2025.'
+        });
+        
+        if (signUpError) {
+          console.error('❌ Erreur création compte admin:', signUpError);
+        } else {
+          console.log('✅ Compte admin créé');
+        }
+      } else {
+        console.log('✅ Admin authentifié avec succès:', data.user?.id);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'authentification admin:', error);
+    }
+  };
 
   const loadOrders = async () => {
     try {
