@@ -111,14 +111,6 @@ function getStatusInfo(status: string) {
         icon: '✅',
         nextStep: 'Nous préparons actuellement votre commande.'
       };
-    case 'preparing':
-      return {
-        title: 'Commande en Préparation 📦',
-        message: 'Votre commande est actuellement en cours de préparation.',
-        color: '#7c3aed',
-        icon: '📦',
-        nextStep: 'Vos glaçons seront bientôt prêts pour la livraison.'
-      };
     case 'delivering':
       return {
         title: 'Commande en Livraison 🚚',
