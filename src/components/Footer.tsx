@@ -105,7 +105,7 @@ function Footer() {
         {/* Copyright */}
         <div className="border-t border-slate-800 mt-8 pt-8 text-center">
           <p className="text-slate-400">
-            © 2024 Glaçons Marrakech. Tous droits réservés.
+            © 2025 The Ice Guys. Tous droits réservés.
           </p>
         </div>
       </div>
