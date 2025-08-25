@@ -93,7 +93,9 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       }
 
       await driverService.createDriver({
-        ...newDriver,
+        name: newDriver.name,
+        phone: newDriver.phone,
+        email: newDriver.email,
         password_hash: newDriver.password, // En production, il faudrait hasher le mot de passe
         is_active: true,
         current_status: 'offline'
