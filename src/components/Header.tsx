@@ -34,7 +34,7 @@ function Header({ currentPage, onPageChange }: HeaderProps) {
               className="flex items-center"
             >
               <img
-                src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20Noour%20(500%20x%20150%20px)%20(3).png"
+                src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20The%20Ice%20Guys%20Fond%20blanc%20long-1.png"
                 alt="The Ice Guys"
                 className="h-10 w-auto"
               />
