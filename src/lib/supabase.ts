@@ -202,6 +202,8 @@ export const driverService = {
   // Récupérer tous les livreurs
   async getAllDrivers() {
     console.log('Service: Récupération des livreurs...');
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Auth status:', await supabase.auth.getSession());
     try {
       const { data, error } = await supabase
         .from('delivery_drivers')
@@ -212,6 +214,9 @@ export const driverService = {
       
       if (error) {
         console.error('Erreur Supabase:', error);
+        console.error('Error code:', error.code);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
         throw new Error(`Erreur lors de la récupération des livreurs: ${error.message}`);
       }
       
