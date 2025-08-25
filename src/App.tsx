@@ -8,10 +8,18 @@ import Contact from './pages/Contact';
 import Blog from './pages/Blog';
 import ProfessionalOrderPage from './pages/ProfessionalOrderPage';
 import IndividualOrderPage from './pages/IndividualOrderPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [customerType, setCustomerType] = useState<'professional' | 'individual' | null>(null);
+
+  // Check for admin route on component mount
+  React.useEffect(() => {
+    if (window.location.hash === '#admin') {
+      setCurrentPage('admin');
+    }
+  }, []);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -60,6 +68,8 @@ function App() {
           return <IndividualOrderPage onBack={handleBackToHome} />;
         }
         return <Hero onOrderClick={handleOrderClick} />;
+      case 'admin':
+        return <AdminDashboard onBack={handleBackToHome} />;
       default:
         return <Hero onOrderClick={handleOrderClick} />;
     }
@@ -68,7 +78,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header - visible on all pages except order */}
-      {currentPage !== 'order' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />
       )}
       
@@ -78,12 +88,12 @@ function App() {
       </main>
       
       {/* Footer - visible on all pages except order */}
-      {currentPage !== 'order' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && (
         <Footer />
       )}
       
       {/* WhatsApp Widget - Mobile only */}
-      {currentPage !== 'order' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && (
         <WhatsAppWidget />
       )}
     </div>
