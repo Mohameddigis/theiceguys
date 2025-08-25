@@ -150,7 +150,7 @@ function Blog() {
     },
     {
       id: '5',
-      title: 'Glaçons Marrakech : Notre Engagement Écologique',
+      title: 'The Ice Guys : Notre Engagement Écologique',
       excerpt: 'Découvrez nos initiatives environnementales et notre approche durable de la production de glaçons.',
       content: `
         <h2>Production Responsable</h2>
