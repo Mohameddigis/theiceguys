@@ -18,7 +18,7 @@ function About() {
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
             À propos de
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">
-              The Ice Guys
+              Glaçons Marrakech
             </span>
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
