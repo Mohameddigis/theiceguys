@@ -65,31 +65,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const loadDrivers = async () => {
     try {
-      console.log('Chargement des livreurs...');
-      
-      // Vérification de l'authentification
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('🔍 Auth Debug:');
-      console.log('- Current user:', user);
-      console.log('- User ID:', user?.id);
-      console.log('- Expected admin ID:', '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-      console.log('- IDs match:', user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-      
-      // Test direct de la requête
-      console.log('🔍 Testing direct query...');
-      const { data: testData, error: testError } = await supabase
-        .from('delivery_drivers')
-        .select('*');
-      
-      console.log('Direct query result:', { data: testData, error: testError });
+      console.log('🚚 Chargement des livreurs...');
       
       const data = await driverService.getAllDrivers();
-      console.log('Livreurs récupérés:', data);
-      console.log('Nombre de livreurs:', data?.length || 0);
+      console.log('📊 Résultat final:', data?.length || 0, 'livreurs');
       setDrivers(data);
     } catch (error) {
       console.error('Erreur lors du chargement des livreurs:', error);
-      console.error('Détails complets:', JSON.stringify(error, null, 2));
       setDrivers([]);
     }
   };
