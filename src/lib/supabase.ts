@@ -202,28 +202,54 @@ export const driverService = {
   // Récupérer tous les livreurs
   async getAllDrivers() {
     console.log('Service: Récupération des livreurs...');
-    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('Auth status:', await supabase.auth.getSession());
+    
     try {
+      // Vérification de l'environnement
+      console.log('🔧 Environment check:');
+      console.log('- Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('- Anon Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+      
+      // Vérification de la session
+      const { data: session, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔧 Session check:', { session: session.session, error: sessionError });
+      
+      // Test de connexion basique
+      console.log('🔧 Testing basic connection...');
+      const { data: testConnection } = await supabase
+        .from('delivery_drivers')
+        .select('count(*)', { count: 'exact' });
+      console.log('Connection test result:', testConnection);
+      
       const { data, error } = await supabase
         .from('delivery_drivers')
         .select('*')
         .order('name');
 
-      console.log('Supabase response:', { data, error });
+      console.log('🔧 Supabase response:', { 
+        data, 
+        error,
+        dataLength: data?.length,
+        errorCode: error?.code,
+        errorMessage: error?.message,
+        errorDetails: error?.details,
+        errorHint: error?.hint
+      });
       
       if (error) {
-        console.error('Erreur Supabase:', error);
-        console.error('Error code:', error.code);
-        console.error('Error details:', error.details);
-        console.error('Error hint:', error.hint);
+        console.error('❌ Erreur Supabase complète:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         throw new Error(`Erreur lors de la récupération des livreurs: ${error.message}`);
       }
       
-      console.log('Livreurs récupérés avec succès:', data?.length || 0);
+      console.log('✅ Livreurs récupérés avec succès:', data?.length || 0);
+      console.log('✅ Données complètes:', data);
       return data || [];
     } catch (error) {
-      console.error('Erreur dans getAllDrivers:', error);
+      console.error('❌ Erreur dans getAllDrivers:', error);
       throw error;
     }
   },

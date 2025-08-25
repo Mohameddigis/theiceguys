@@ -1,3 +1,4 @@
+import { supabase } from '../lib/supabase';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, Download, UserPlus, Navigation } from 'lucide-react';
 import { orderService, driverService, Order, Customer, DeliveryDriver } from '../lib/supabase';
@@ -48,16 +49,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     loadOrders();
     loadDrivers();
     loadDriverLocations();
-    
-    // Debug: vérifier l'authentification
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user);
-      console.log('User ID:', user?.id);
-      console.log('Expected admin ID:', '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-      console.log('IDs match:', user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-    };
-    checkAuth();
   }, []);
 
   const loadOrders = async () => {
@@ -75,9 +66,26 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const loadDrivers = async () => {
     try {
       console.log('Chargement des livreurs...');
-      console.log('Auth user:', await supabase.auth.getUser());
+      
+      // Vérification de l'authentification
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('🔍 Auth Debug:');
+      console.log('- Current user:', user);
+      console.log('- User ID:', user?.id);
+      console.log('- Expected admin ID:', '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
+      console.log('- IDs match:', user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
+      
+      // Test direct de la requête
+      console.log('🔍 Testing direct query...');
+      const { data: testData, error: testError } = await supabase
+        .from('delivery_drivers')
+        .select('*');
+      
+      console.log('Direct query result:', { data: testData, error: testError });
+      
       const data = await driverService.getAllDrivers();
       console.log('Livreurs récupérés:', data);
+      console.log('Nombre de livreurs:', data?.length || 0);
       setDrivers(data);
     } catch (error) {
       console.error('Erreur lors du chargement des livreurs:', error);
@@ -312,6 +320,20 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             {/* Formulaire d'ajout de livreur */}
             <div className="mb-8 p-6 bg-green-50 rounded-lg">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Ajouter un nouveau livreur</h2>
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Debug Info:</strong> {drivers.length} livreur(s) chargé(s)
+                </p>
+                <button
+                  onClick={() => {
+                    console.log('🔄 Rechargement manuel des livreurs...');
+                    loadDrivers();
+                  }}
+                  className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  Recharger les livreurs
+                </button>
+              </div>
               <form onSubmit={createDriver} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
