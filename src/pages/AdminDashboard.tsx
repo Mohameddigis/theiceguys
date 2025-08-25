@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut } from 'lucide-react';
 import { orderService, Order, Customer } from '../lib/supabase';
 
 interface AdminDashboardProps {
-  onBack: () => void;
+  onBack: () => void; // This will now handle logout
 }
 
 function AdminDashboard({ onBack }: AdminDashboardProps) {
@@ -296,10 +296,10 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <button
               onClick={onBack}
-              className="flex items-center space-x-2 text-brand-primary hover:text-brand-secondary transition-colors"
+             className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Retour</span>
+             <LogOut className="h-5 w-5" />
+             <span>Déconnexion</span>
             </button>
             <div className="flex items-center space-x-3">
               <Package className="h-6 w-6 text-brand-primary" />

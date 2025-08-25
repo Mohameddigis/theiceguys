@@ -9,15 +9,36 @@ import Blog from './pages/Blog';
 import ProfessionalOrderPage from './pages/ProfessionalOrderPage';
 import IndividualOrderPage from './pages/IndividualOrderPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [customerType, setCustomerType] = useState<'professional' | 'individual' | null>(null);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
   // Check for admin route on component mount
   React.useEffect(() => {
     if (window.location.hash === '#admin') {
       setCurrentPage('admin');
+      // Check if admin is already authenticated
+      const isAuthenticated = localStorage.getItem('admin_authenticated') === 'true';
+      const loginTime = localStorage.getItem('admin_login_time');
+      
+      // Session expires after 24 hours
+      if (isAuthenticated && loginTime) {
+        const now = Date.now();
+        const sessionAge = now - parseInt(loginTime);
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        if (sessionAge < twentyFourHours) {
+          setIsAdminAuthenticated(true);
+        } else {
+          // Session expired
+          localStorage.removeItem('admin_authenticated');
+          localStorage.removeItem('admin_login_time');
+          setIsAdminAuthenticated(false);
+        }
+      }
     }
   }, []);
 
@@ -47,10 +68,30 @@ function App() {
   const handleBackToHome = () => {
     setCurrentPage('home');
     setCustomerType(null);
+    setIsAdminAuthenticated(false);
+    // Clear admin session when going back to home
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_login_time');
+    // Clear URL hash
+    window.location.hash = '';
     // Scroll to top when going back to home
     setTimeout(scrollToTop, 100);
   };
 
+  const handleAdminLogin = () => {
+    setIsAdminAuthenticated(true);
+    // Scroll to top after login
+    setTimeout(scrollToTop, 100);
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuthenticated(false);
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_login_time');
+    setCurrentPage('home');
+    window.location.hash = '';
+    setTimeout(scrollToTop, 100);
+  };
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -69,7 +110,11 @@ function App() {
         }
         return <Hero onOrderClick={handleOrderClick} />;
       case 'admin':
-        return <AdminDashboard onBack={handleBackToHome} />;
+       if (isAdminAuthenticated) {
+         return <AdminDashboard onBack={handleAdminLogout} />;
+       } else {
+         return <AdminLogin onLogin={handleAdminLogin} onBack={handleBackToHome} />;
+       }
       default:
         return <Hero onOrderClick={handleOrderClick} />;
     }
