@@ -103,7 +103,7 @@ function Hero({ onOrderClick }: HeroProps) {
               {/* Logo pour toutes les tailles d'écran */}
               <div className="flex justify-center">
                 <img 
-                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/icon%20ice%20guys.png"
+                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20Noour%20(500%20x%20150%20px)%20(3).png"
                   alt="The Ice Guys"
                   className="w-72 sm:w-96 h-auto mx-auto drop-shadow-lg animate-pulse hover:animate-bounce transition-all duration-300"
                 />
