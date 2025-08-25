@@ -45,7 +45,7 @@ serve(async (req) => {
 
     // Send email using Resend API
     const emailResponse = await sendEmailWithResend({
-      from: 'Glaçons Marrakech <onboarding@resend.dev>',
+      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
       to: customerEmail,
       subject: `Confirmation de commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: emailHtml
@@ -53,8 +53,8 @@ serve(async (req) => {
 
     // Also send a copy to the business
     await sendEmailWithResend({
-      from: 'Glaçons Marrakech <onboarding@resend.dev>',
-      to: 'commandes@theiceguys.com',
+      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
+      to: 'commandes@glaconsmarrakech.com',
       subject: `Nouvelle commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: generateBusinessNotificationEmail(customerName, orderDetails)
     });
