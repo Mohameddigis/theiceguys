@@ -97,7 +97,7 @@ function Footer() {
             </div>
             <div>
               <p className="font-medium text-slate-300">Support Client</p>
-              <p className="text-slate-300">Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.
+              <p className="text-slate-400">Lun-Dim: 9h - 18h</p>
             </div>
           </div>
         </div>
