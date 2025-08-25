@@ -27,17 +27,17 @@ function Hero({ onOrderClick }: HeroProps) {
   const testimonials = [
     {
       name: 'My FIRST PROPERTY',
-      text: 'Service impeccable et glaçons de qualité exceptionnelle. The Ice Guys est notre partenaire de confiance !',
+      text: 'Service impeccable et glaçons de qualité exceptionnelle. Glaçons Marrakech est notre partenaire de confiance !',
       rating: 5
     },
     {
       name: 'Gravity Park',
-      text: 'Livraisons toujours à temps et produits conformes à nos attentes. The Ice Guys est très professionnel.',
+      text: 'Livraisons toujours à temps et produits conformes à nos attentes. Glaçons Marrakech est très professionnel.',
       rating: 5
     },
     {
       name: 'Table M',
-      text: 'Excellent rapport qualité-prix. Nous recommandons vivement The Ice Guys.',
+      text: 'Excellent rapport qualité-prix. Nous recommandons vivement Glaçons Marrakech.',
       rating: 5
     }
   ];

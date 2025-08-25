@@ -97,7 +97,7 @@ function Footer() {
             </div>
             <div>
               <p className="font-medium text-slate-300">Support Client</p>
-              <p className="text-slate-400">Lun-Ven: 9h - 18h</p>
+              <p className="text-slate-300">Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@ function Footer() {
         {/* Copyright */}
         <div className="border-t border-slate-800 mt-8 pt-8 text-center">
           <p className="text-slate-400">
-            © 2025 The Ice Guys. Tous droits réservés.
+            © 2025 Glaçons Marrakech. Tous droits réservés.
           </p>
         </div>
       </div>
