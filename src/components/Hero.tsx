@@ -105,7 +105,7 @@ function Hero({ onOrderClick }: HeroProps) {
                 <img 
                   src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/icon%20ice%20guys.png"
                   alt="The Ice Guys"
-                  className="w-72 h-auto mx-auto drop-shadow-lg"
+                  className="w-72 h-auto mx-auto drop-shadow-lg animate-pulse hover:animate-bounce transition-all duration-300"
                 />
               </div>
               
