@@ -47,7 +47,7 @@ export interface Order {
   customer_id: string;
   assigned_driver_id?: string;
   order_number: string;
-  status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'delivering' | 'delivered' | 'cancelled';
   delivery_type: 'standard' | 'express';
   delivery_date?: string;
   delivery_time?: string;

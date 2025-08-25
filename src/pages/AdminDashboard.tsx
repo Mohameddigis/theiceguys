@@ -195,7 +195,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'preparing': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'delivering': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
       case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
@@ -207,7 +206,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return <Clock className="h-4 w-4" />;
       case 'confirmed': return <CheckCircle className="h-4 w-4" />;
-      case 'preparing': return <Package className="h-4 w-4" />;
       case 'delivering': return <Truck className="h-4 w-4" />;
       case 'delivered': return <CheckCircle className="h-4 w-4" />;
       case 'cancelled': return <XCircle className="h-4 w-4" />;
@@ -219,7 +217,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return 'En attente';
       case 'confirmed': return 'Confirmée';
-      case 'preparing': return 'En préparation';
       case 'delivering': return 'En livraison';
       case 'delivered': return 'Livrée';
       case 'cancelled': return 'Annulée';
@@ -447,7 +444,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             <div className="mb-8 p-4 bg-slate-50 rounded-lg">
               <h3 className="font-semibold text-slate-900 mb-3">Changer le statut :</h3>
               <div className="flex flex-wrap gap-2">
-                {(['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
+                {(['pending', 'confirmed', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
                   <button
                     key={status}
                     onClick={() => updateOrderStatus(selectedOrder.id, status)}
@@ -762,7 +759,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <option value="all">Tous les statuts</option>
                   <option value="pending">En attente</option>
                   <option value="confirmed">Confirmées</option>
-                  <option value="preparing">En préparation</option>
                   <option value="delivering">En livraison</option>
                   <option value="delivered">Livrées</option>
                   <option value="cancelled">Annulées</option>
