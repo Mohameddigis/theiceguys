@@ -718,7 +718,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </button>
             <div className="flex items-center space-x-3">
               <Package className="h-6 w-6 text-brand-primary" />
-              <h1 className="text-2xl font-bold text-slate-900">Administration The Ice Guys</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Administration Glaçons Marrakech</h1>
             </div>
             <div className="flex items-center space-x-3">
               <button

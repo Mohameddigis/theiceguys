@@ -352,7 +352,7 @@ function generateOrderConfirmationEmail(customerName: string, orderDetails: any)
                     
                     <div class="contact-info">
                         <p>📧 <strong>Email:</strong> commandes@theiceguys.com</p>
-                        <p>🌐 <strong>Site web:</strong> https://theiceguys.com</p>
+                        <p>🌐 <strong>Site web:</strong> https://glaconsmarrakech.com</p>
                         <p>📍 <strong>Adresse:</strong> Chrifia, Marrakech</p>
                     </div>
                     

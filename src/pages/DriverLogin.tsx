@@ -184,7 +184,7 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
           {/* Security notice */}
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-500">
-              🚚 Espace réservé aux livreurs The Ice Guys
+              🚚 Espace réservé aux livreurs Glaçons Marrakech
             </p>
           </div>
         </div>

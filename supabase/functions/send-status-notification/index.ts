@@ -384,7 +384,7 @@ function generateStatusNotificationEmail(customerName: string, orderNumber: stri
                     </div>
                     
                     <div class="company-info">
-                        <p><strong>Merci de faire confiance à The Ice Guys !</strong></p>
+                        <p><strong>Merci de faire confiance à Glaçons Marrakech !</strong></p>
                         <p>Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.</p>
                     </div>
                 </div>

@@ -427,7 +427,7 @@ function Blog() {
         <div className="mt-16 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-8 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Une question sur nos glaçons ?</h2>
           <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-            Notre équipe d'experts The Ice Guys est à votre disposition pour vous conseiller 
+            Notre équipe d'experts Glaçons Marrakech est à votre disposition pour vous conseiller
             et répondre à toutes vos questions sur nos produits et services.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

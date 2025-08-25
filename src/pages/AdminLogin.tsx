@@ -56,7 +56,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
               <Lock className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Administration</h1>
-            <p className="text-slate-600">The Ice Guys - Connexion sécurisée</p>
+            <p className="text-slate-600">Glaçons Marrakech - Connexion sécurisée</p>
           </div>
 
           {/* Form */}

@@ -174,7 +174,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   };
 
   const generateWhatsAppMessage = () => {
-    let message = `🏠 *COMMANDE PARTICULIER - THE ICE GUYS*\n\n`;
+    let message = `🏠 *COMMANDE PARTICULIER - GLAÇONS MARRAKECH*\n\n`;
     
     message += `📋 *DÉTAILS DE LA COMMANDE:*\n`;
     selectedItems.forEach(item => {

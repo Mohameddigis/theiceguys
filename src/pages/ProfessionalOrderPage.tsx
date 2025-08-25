@@ -175,7 +175,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   };
 
   const generateWhatsAppMessage = () => {
-    let message = `🏢 *COMMANDE PROFESSIONNELLE - THE ICE GUYS*\n\n`;
+    let message = `🏢 *COMMANDE PROFESSIONNELLE - GLAÇONS MARRAKECH*\n\n`;
     
     message += `📋 *DÉTAILS DE LA COMMANDE:*\n`;
     selectedItems.forEach(item => {
