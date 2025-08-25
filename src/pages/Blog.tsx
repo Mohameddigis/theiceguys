@@ -326,7 +326,7 @@ function Blog() {
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
             Blog
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">
-              The Ice Guys
+              Glaçons Marrakech
             </span>
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
@@ -425,9 +425,9 @@ function Blog() {
 
         {/* CTA Section */}
         <div className="mt-16 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-8 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Une question sur nos glaçons ?</h2>
+          <h2 className="text-3xl font-bold mb-4">Besoin de glaçons de qualité ?</h2>
           <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-            Notre équipe d'experts Glaçons Marrakech est à votre disposition pour vous conseiller
+            Notre équipe d'experts est à votre disposition pour vous conseiller
             et répondre à toutes vos questions sur nos produits et services.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
