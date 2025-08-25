@@ -10,11 +10,16 @@ import ProfessionalOrderPage from './pages/ProfessionalOrderPage';
 import IndividualOrderPage from './pages/IndividualOrderPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
+import DriverLogin from './pages/DriverLogin';
+import DriverDashboard from './pages/DriverDashboard';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [customerType, setCustomerType] = useState<'professional' | 'individual' | null>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(false);
+  const [driverId, setDriverId] = useState<string>('');
+  const [driverName, setDriverName] = useState<string>('');
 
   // Check for admin route on component mount
   React.useEffect(() => {
@@ -37,6 +42,35 @@ function App() {
           localStorage.removeItem('admin_authenticated');
           localStorage.removeItem('admin_login_time');
           setIsAdminAuthenticated(false);
+        }
+      }
+    }
+    
+    if (window.location.hash === '#driver') {
+      setCurrentPage('driver');
+      // Check if driver is already authenticated
+      const isAuthenticated = localStorage.getItem('driver_authenticated') === 'true';
+      const loginTime = localStorage.getItem('driver_login_time');
+      const storedDriverId = localStorage.getItem('driver_id');
+      const storedDriverName = localStorage.getItem('driver_name');
+      
+      // Session expires after 24 hours
+      if (isAuthenticated && loginTime && storedDriverId && storedDriverName) {
+        const now = Date.now();
+        const sessionAge = now - parseInt(loginTime);
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        if (sessionAge < twentyFourHours) {
+          setIsDriverAuthenticated(true);
+          setDriverId(storedDriverId);
+          setDriverName(storedDriverName);
+        } else {
+          // Session expired
+          localStorage.removeItem('driver_authenticated');
+          localStorage.removeItem('driver_id');
+          localStorage.removeItem('driver_name');
+          localStorage.removeItem('driver_login_time');
+          setIsDriverAuthenticated(false);
         }
       }
     }
@@ -69,9 +103,15 @@ function App() {
     setCurrentPage('home');
     setCustomerType(null);
     setIsAdminAuthenticated(false);
+    setIsDriverAuthenticated(false);
     // Clear admin session when going back to home
     localStorage.removeItem('admin_authenticated');
     localStorage.removeItem('admin_login_time');
+    // Clear driver session when going back to home
+    localStorage.removeItem('driver_authenticated');
+    localStorage.removeItem('driver_id');
+    localStorage.removeItem('driver_name');
+    localStorage.removeItem('driver_login_time');
     // Clear URL hash
     window.location.hash = '';
     // Scroll to top when going back to home
@@ -81,6 +121,27 @@ function App() {
   const handleAdminLogin = () => {
     setIsAdminAuthenticated(true);
     // Scroll to top after login
+    setTimeout(scrollToTop, 100);
+  };
+
+  const handleDriverLogin = (driverId: string, driverName: string) => {
+    setIsDriverAuthenticated(true);
+    setDriverId(driverId);
+    setDriverName(driverName);
+    // Scroll to top after login
+    setTimeout(scrollToTop, 100);
+  };
+
+  const handleDriverLogout = () => {
+    setIsDriverAuthenticated(false);
+    setDriverId('');
+    setDriverName('');
+    localStorage.removeItem('driver_authenticated');
+    localStorage.removeItem('driver_id');
+    localStorage.removeItem('driver_name');
+    localStorage.removeItem('driver_login_time');
+    setCurrentPage('home');
+    window.location.hash = '';
     setTimeout(scrollToTop, 100);
   };
 
@@ -115,6 +176,12 @@ function App() {
        } else {
          return <AdminLogin onLogin={handleAdminLogin} onBack={handleBackToHome} />;
        }
+      case 'driver':
+        if (isDriverAuthenticated) {
+          return <DriverDashboard driverId={driverId} driverName={driverName} onLogout={handleDriverLogout} />;
+        } else {
+          return <DriverLogin onLogin={handleDriverLogin} onBack={handleBackToHome} />;
+        }
       default:
         return <Hero onOrderClick={handleOrderClick} />;
     }
@@ -123,7 +190,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header - visible on all pages except order */}
-      {currentPage !== 'order' && currentPage !== 'admin' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && currentPage !== 'driver' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />
       )}
       
@@ -133,12 +200,12 @@ function App() {
       </main>
       
       {/* Footer - visible on all pages except order */}
-      {currentPage !== 'order' && currentPage !== 'admin' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && currentPage !== 'driver' && (
         <Footer />
       )}
       
       {/* WhatsApp Widget - Mobile only */}
-      {currentPage !== 'order' && currentPage !== 'admin' && (
+      {currentPage !== 'order' && currentPage !== 'admin' && currentPage !== 'driver' && (
         <WhatsAppWidget />
       )}
     </div>

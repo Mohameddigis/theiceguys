@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, Download } from 'lucide-react';
-import { orderService, Order, Customer } from '../lib/supabase';
+import { ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, Download, UserPlus, Navigation } from 'lucide-react';
+import { orderService, driverService, Order, Customer, DeliveryDriver } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
+import MapboxMap from '../components/MapboxMap';
 
 interface AdminDashboardProps {
   onBack: () => void; // This will now handle logout
@@ -9,11 +10,21 @@ interface AdminDashboardProps {
 
 function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [drivers, setDrivers] = useState<DeliveryDriver[]>([]);
+  const [driverLocations, setDriverLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showDriverManagement, setShowDriverManagement] = useState(false);
+  const [showDriverMap, setShowDriverMap] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [newDriver, setNewDriver] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: ''
+  });
 
   const handleDownloadPDF = async (order: Order) => {
     try {
@@ -35,6 +46,8 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   useEffect(() => {
     loadOrders();
+    loadDrivers();
+    loadDriverLocations();
   }, []);
 
   const loadOrders = async () => {
@@ -46,6 +59,53 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       console.error('Erreur lors du chargement des commandes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDrivers = async () => {
+    try {
+      const data = await driverService.getAllDrivers();
+      setDrivers(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des livreurs:', error);
+    }
+  };
+
+  const loadDriverLocations = async () => {
+    try {
+      const data = await driverService.getAllDriversLastLocations();
+      setDriverLocations(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des positions:', error);
+    }
+  };
+
+  const createDriver = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await driverService.createDriver({
+        ...newDriver,
+        password_hash: newDriver.password, // En production, il faudrait hasher le mot de passe
+        is_active: true,
+        current_status: 'offline'
+      });
+      setNewDriver({ name: '', phone: '', email: '', password: '' });
+      await loadDrivers();
+      alert('Livreur créé avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de la création du livreur:', error);
+      alert('Erreur lors de la création du livreur');
+    }
+  };
+
+  const assignDriverToOrder = async (orderId: string, driverId: string) => {
+    try {
+      await driverService.assignDriverToOrder(orderId, driverId);
+      await loadOrders();
+      alert('Livreur assigné avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation:', error);
+      alert('Erreur lors de l\'assignation du livreur');
     }
   };
 
@@ -179,6 +239,172 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     totalRevenue: orders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total, 0)
   };
 
+  // Gestion des livreurs
+  if (showDriverManagement) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <button
+            onClick={() => {
+              setShowDriverManagement(false);
+              setTimeout(scrollToTop, 100);
+            }}
+            className="flex items-center space-x-2 text-brand-primary hover:text-brand-secondary transition-colors mb-6"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Retour au dashboard</span>
+          </button>
+
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h1 className="text-2xl font-bold text-slate-900 mb-8">Gestion des Livreurs</h1>
+
+            {/* Formulaire d'ajout de livreur */}
+            <div className="mb-8 p-6 bg-green-50 rounded-lg">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Ajouter un nouveau livreur</h2>
+              <form onSubmit={createDriver} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Nom complet"
+                  value={newDriver.name}
+                  onChange={(e) => setNewDriver(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                  className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <input
+                  type="tel"
+                  placeholder="Téléphone"
+                  value={newDriver.phone}
+                  onChange={(e) => setNewDriver(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                  className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={newDriver.email}
+                  onChange={(e) => setNewDriver(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                  className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <input
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={newDriver.password}
+                  onChange={(e) => setNewDriver(prev => ({ ...prev, password: e.target.value }))}
+                  required
+                  className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <button
+                  type="submit"
+                  className="md:col-span-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Ajouter le livreur
+                </button>
+              </form>
+            </div>
+
+            {/* Liste des livreurs */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-slate-900">Livreurs ({drivers.length})</h2>
+              {drivers.map((driver) => (
+                <div key={driver.id} className="bg-slate-50 rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-slate-900">{driver.name}</h3>
+                    <p className="text-sm text-slate-600">{driver.email} • {driver.phone}</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        driver.current_status === 'available' ? 'bg-green-100 text-green-800' :
+                        driver.current_status === 'busy' ? 'bg-orange-100 text-orange-800' :
+                        driver.current_status === 'on_break' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {driver.current_status === 'available' ? '🟢 Disponible' :
+                         driver.current_status === 'busy' ? '🟠 Occupé' :
+                         driver.current_status === 'on_break' ? '🟡 En pause' :
+                         '⚫ Hors ligne'}
+                      </span>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        driver.is_active ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {driver.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <a
+                      href={`tel:${driver.phone}`}
+                      className="text-green-600 hover:text-green-700 transition-colors"
+                    >
+                      <Phone className="h-5 w-5" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Carte des livreurs
+  if (showDriverMap) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <button
+            onClick={() => {
+              setShowDriverMap(false);
+              setTimeout(scrollToTop, 100);
+            }}
+            className="flex items-center space-x-2 text-brand-primary hover:text-brand-secondary transition-colors mb-6"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Retour au dashboard</span>
+          </button>
+
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h1 className="text-2xl font-bold text-slate-900 mb-6">Positions des Livreurs</h1>
+            
+            <div className="h-96 rounded-lg overflow-hidden">
+              <MapboxMap
+                onAddressSelect={() => {}}
+                selectedCoordinates={undefined}
+              />
+            </div>
+            
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Dernières positions</h2>
+              <div className="space-y-3">
+                {driverLocations.map((location) => (
+                  <div key={location.id} className="bg-slate-50 rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-slate-900">{location.driver?.name}</h3>
+                      <p className="text-sm text-slate-600">
+                        {location.address || `${location.latitude}, ${location.longitude}`}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {new Date(location.recorded_at).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-primary hover:text-brand-secondary transition-colors"
+                    >
+                      <Navigation className="h-5 w-5" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (selectedOrder) {
     return (
       <div className="min-h-screen bg-slate-50">
@@ -227,6 +453,34 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                     <span>{getStatusLabel(status)}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Assignation de livreur */}
+            <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-slate-900 mb-3">Assigner un livreur :</h3>
+              <div className="flex items-center space-x-4">
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      assignDriverToOrder(selectedOrder.id, e.target.value);
+                    }
+                  }}
+                  className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                  defaultValue={selectedOrder.assigned_driver_id || ''}
+                >
+                  <option value="">Sélectionner un livreur</option>
+                  {drivers.filter(d => d.is_active).map((driver) => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.name} ({driver.current_status})
+                    </option>
+                  ))}
+                </select>
+                {selectedOrder.assigned_driver && (
+                  <div className="text-sm text-slate-600">
+                    Assigné à: <strong>{selectedOrder.assigned_driver.name}</strong>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -386,14 +640,37 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               <Package className="h-6 w-6 text-brand-primary" />
               <h1 className="text-2xl font-bold text-slate-900">Administration The Ice Guys</h1>
             </div>
-            <button
-              onClick={loadOrders}
-              disabled={loading}
-              className="flex items-center space-x-2 bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Actualiser</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => {
+                  setShowDriverManagement(true);
+                  setTimeout(scrollToTop, 100);
+                }}
+                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Livreurs</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowDriverMap(true);
+                  loadDriverLocations();
+                  setTimeout(scrollToTop, 100);
+                }}
+                className="flex items-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <Navigation className="h-4 w-4" />
+                <span>Carte</span>
+              </button>
+              <button
+                onClick={loadOrders}
+                disabled={loading}
+                className="flex items-center space-x-2 bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Actualiser</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -567,6 +844,9 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-medium text-slate-900">{order.customer?.name}</p>
+                          {order.assigned_driver && (
+                            <p className="text-xs text-green-600">👤 {order.assigned_driver.name}</p>
+                          )}
                           <p className="text-sm text-slate-500">{order.customer?.phone}</p>
                         </div>
                       </td>

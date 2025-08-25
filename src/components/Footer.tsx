@@ -49,6 +49,18 @@ function Footer() {
                       >
                         Administration
                       </a>
+                      <span className="text-slate-500 mx-2">•</span>
+                      <a 
+                        href="/driver" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.location.hash = 'driver';
+                          window.location.reload();
+                        }}
+                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+                      >
+                        Espace Livreur
+                      </a>
                     </div>
                   <p className="text-slate-400 text-sm">Maroc</p>
                 </div>
