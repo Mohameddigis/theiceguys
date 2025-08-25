@@ -64,6 +64,14 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     }
   };
 
+  const updateDriverStatus = async (status: 'offline' | 'available' | 'busy' | 'on_break') => {
+    try {
+      await driverService.updateDriverStatus(driverId, status);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut livreur:', error);
+    }
+  };
+
   const recordCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
