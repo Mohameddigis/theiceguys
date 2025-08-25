@@ -75,7 +75,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                   onChange={handleInputChange}
                   required
                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-colors"
-                  placeholder="admin@glaconsmarrakech.com"
+                  placeholder="commandes@glaconsmarrakech"
                 />
               </div>
             </div>
