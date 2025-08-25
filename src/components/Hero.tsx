@@ -148,6 +148,7 @@ function Hero({ onOrderClick }: HeroProps) {
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-light via-brand-secondary to-white">
                 GUYS
               </span>
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
