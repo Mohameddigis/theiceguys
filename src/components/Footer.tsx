@@ -37,32 +37,28 @@ function Footer() {
                 <MapPin className="h-5 w-5 text-brand-light mt-0.5" />
                 <div>
                   <p className="text-slate-300">Chrifia, Marrakech</p>
+                  <p className="text-slate-400 text-sm">Maroc</p>
                     <div className="mt-4">
-                      <a 
-                        href="/admin" 
-                        onClick={(e) => {
-                          e.preventDefault();
+                      <button
+                        onClick={() => {
                           window.location.hash = 'admin';
                           window.location.reload();
                         }}
-                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
                       >
                         Administration
-                      </a>
+                      </button>
                       <span className="text-slate-500 mx-2">•</span>
-                      <a 
-                        href="/driver" 
-                        onClick={(e) => {
-                          e.preventDefault();
+                      <button
+                        onClick={() => {
                           window.location.hash = 'driver';
                           window.location.reload();
                         }}
-                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+                        className="text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
                       >
                         Espace Livreur
-                      </a>
+                      </button>
                     </div>
-                  <p className="text-slate-400 text-sm">Maroc</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
