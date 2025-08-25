@@ -27,17 +27,17 @@ function Hero({ onOrderClick }: HeroProps) {
   const testimonials = [
     {
       name: 'My FIRST PROPERTY',
-      text: 'Service impeccable et glaçons de qualité exceptionnelle. Notre partenaire de confiance !',
+      text: 'Service impeccable et glaçons de qualité exceptionnelle. The Ice Guys est notre partenaire de confiance !',
       rating: 5
     },
     {
       name: 'Gravity Park',
-      text: 'Livraisons toujours à temps et produits conformes à nos attentes. Très professionnel.',
+      text: 'Livraisons toujours à temps et produits conformes à nos attentes. The Ice Guys est très professionnel.',
       rating: 5
     },
     {
       name: 'Table M',
-      text: 'Excellent rapport qualité-prix. Nous recommandons vivement Glaçons Marrakech.',
+      text: 'Excellent rapport qualité-prix. Nous recommandons vivement The Ice Guys.',
       rating: 5
     }
   ];
@@ -142,12 +142,12 @@ function Hero({ onOrderClick }: HeroProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Pourquoi choisir 
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary"> Glaçons Marrakech</span> ?
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Nous nous engageons à fournir des glaçons de qualité supérieure avec un service exceptionnel
-            </p>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">
+                THE ICE
+              </span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-light via-brand-secondary to-white">
+                GUYS
+              </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -256,7 +256,7 @@ function Hero({ onOrderClick }: HeroProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Prêt à passer commande ?</h2>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Rejoignez nos clients satisfaits et découvrez la qualité Glaçons Marrakech. 
+            Rejoignez nos clients satisfaits et découvrez la qualité The Ice Guys. 
             Commandez dès maintenant ou contactez-nous pour plus d'informations.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">

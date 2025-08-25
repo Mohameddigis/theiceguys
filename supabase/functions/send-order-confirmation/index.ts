@@ -45,17 +45,17 @@ serve(async (req) => {
 
     // Send email using Resend API
     const emailResponse = await sendEmailWithResend({
-      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
+      from: 'The Ice Guys <commandes@theiceguys.com>',
       to: customerEmail,
-      subject: `Confirmation de commande - ${orderDetails.orderNumber}`,
+      subject: `Confirmation de commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: emailHtml
     });
 
     // Also send a copy to the business
     await sendEmailWithResend({
-      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
-      to: 'commandes@glaconsmarrakech.com',
-      subject: `Nouvelle commande - ${orderDetails.orderNumber}`,
+      from: 'The Ice Guys <commandes@theiceguys.com>',
+      to: 'commandes@theiceguys.com',
+      subject: `Nouvelle commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: generateBusinessNotificationEmail(customerName, orderDetails)
     });
 
@@ -283,7 +283,7 @@ function generateOrderConfirmationEmail(customerName: string, orderDetails: any)
     <body>
         <div class="container">
             <div class="header">
-                <h1>🧊 Glaçons Marrakech</h1>
+                <h1>🧊 The Ice Guys</h1>
                 <h2>Confirmation de commande</h2>
                 <div class="order-number">Commande N° ${orderDetails.orderNumber}</div>
             </div>
@@ -351,13 +351,13 @@ function generateOrderConfirmationEmail(customerName: string, orderDetails: any)
                     <a href="https://wa.me/212693675981" class="whatsapp-btn">💬 WhatsApp: +212 693 675 981</a>
                     
                     <div class="contact-info">
-                        <p>📧 <strong>Email:</strong> commandes@glaconsmarrakech.com</p>
-                        <p>🌐 <strong>Site web:</strong> https://glaconsmarrakech.com</p>
+                        <p>📧 <strong>Email:</strong> commandes@theiceguys.com</p>
+                        <p>🌐 <strong>Site web:</strong> https://theiceguys.com</p>
                         <p>📍 <strong>Adresse:</strong> Chrifia, Marrakech</p>
                     </div>
                     
                     <div class="company-info">
-                        <p><strong>Merci de faire confiance à Glaçons Marrakech !</strong></p>
+                        <p><strong>Merci de faire confiance à The Ice Guys !</strong></p>
                         <p>Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.<br>
                         Nous servons les professionnels et particuliers avec la qualité que vous méritez.</p>
                     </div>

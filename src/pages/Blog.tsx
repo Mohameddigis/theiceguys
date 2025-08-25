@@ -43,6 +43,7 @@ function Blog() {
         <p>Le choix dépend de plusieurs facteurs : type d'établissement, clientèle cible, budget, et volume de consommation. Contactez-nous pour des conseils personnalisés.</p>
       `,
       author: 'Équipe Glaçons Marrakech',
+      author: 'Équipe The Ice Guys',
       date: '2024-01-15',
       readTime: '5 min',
       category: 'Guide Professionnel',
@@ -72,6 +73,7 @@ function Blog() {
         <p>Évitez les variations de température, utilisez des contenants propres, et respectez la règle du "premier entré, premier sorti" pour une rotation optimale.</p>
       `,
       author: 'Expert Glaçons Marrakech',
+      author: 'Expert The Ice Guys',
       date: '2024-01-10',
       readTime: '4 min',
       category: 'Conseils Techniques',
@@ -174,6 +176,7 @@ function Blog() {
         <p>Nous soutenons les initiatives locales de préservation de l'environnement à Marrakech et sensibilisons nos clients aux bonnes pratiques.</p>
       `,
       author: 'Direction Glaçons Marrakech',
+      author: 'Direction The Ice Guys',
       date: '2023-12-20',
       readTime: '4 min',
       category: 'Environnement',
@@ -323,7 +326,7 @@ function Blog() {
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
             Blog
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">
-              Glaçons Marrakech
+              The Ice Guys
             </span>
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
@@ -424,7 +427,7 @@ function Blog() {
         <div className="mt-16 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-8 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Une question sur nos glaçons ?</h2>
           <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-            Notre équipe d'experts est à votre disposition pour vous conseiller 
+            Notre équipe d'experts The Ice Guys est à votre disposition pour vous conseiller 
             et répondre à toutes vos questions sur nos produits et services.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
