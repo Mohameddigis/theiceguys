@@ -36,7 +36,7 @@ function Header({ currentPage, onPageChange }: HeaderProps) {
               <img
                 src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20The%20Ice%20Guys%20Fond%20blanc%20long-1.png"
                 alt="The Ice Guys"
-                className="h-10 w-auto"
+                className="h-16 w-auto"
               />
             </button>
           </div>
