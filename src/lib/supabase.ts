@@ -215,10 +215,6 @@ export const driverService = {
       
       // Test de connexion basique
       console.log('🔧 Testing basic connection...');
-      const { data: testConnection } = await supabase
-        .from('delivery_drivers')
-        .select('count(*)', { count: 'exact' });
-      console.log('Connection test result:', testConnection);
       
       const { data, error } = await supabase
         .from('delivery_drivers')
