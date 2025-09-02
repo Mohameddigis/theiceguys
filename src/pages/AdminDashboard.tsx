@@ -38,7 +38,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
-  const [loadingDrivers, setLoadingDrivers] = useState(false);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -87,18 +86,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
-  const loadDrivers = async () => {
-    try {
-      setLoadingDrivers(true);
-      const driversData = await driverService.getAllDrivers();
-      setDrivers(driversData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des livreurs:', error);
-    } finally {
-      setLoadingDrivers(false);
-    }
-  };
-
   const handleDownloadPDF = async (order: Order) => {
     try {
       await generateOrderPDF(order);
@@ -114,6 +101,15 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       setOrders(ordersData);
     } catch (error) {
       console.error('Erreur lors du chargement des commandes:', error);
+    }
+  };
+
+  const loadDrivers = async () => {
+    try {
+      const driversData = await driverService.getAllDrivers();
+      setDrivers(driversData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des livreurs:', error);
     }
   };
 
@@ -1008,8 +1004,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </div>
           </div>
         </div>
-
-        {/* Customers List */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-slate-900">
@@ -1072,19 +1066,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       </div>
                     )}
                   </div>
-
-                  <div className="border-t border-slate-200 pt-4">
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold text-slate-900">{customerOrders.length}</p>
-                        <p className="text-xs text-slate-600">Commandes</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-green-600">{totalSpent} MAD</p>
-                        <p className="text-xs text-slate-600">Total dépensé</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               );
             })}
@@ -1104,28 +1085,18 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const renderDrivers = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-slate-900">Livreurs ({drivers.length})</h2>
-          <div className="flex space-x-3">
-            <button
-              onClick={() => openDriverForm()}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Nouveau Livreur</span>
-            </button>
-            <button
-              onClick={loadDrivers}
-              disabled={loadingDrivers}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${loadingDrivers ? 'animate-spin' : ''}`} />
-              <span>Actualiser</span>
-            </button>
-          </div>
+          <button 
+            onClick={() => openDriverForm()}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Ajouter</span>
+          </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {drivers.map((driver) => {
             const driverOrders = orders.filter(o => o.assigned_driver_id === driver.id);
             const completedOrders = driverOrders.filter(o => o.status === 'delivered').length;
@@ -1212,7 +1183,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-slate-900">
-                  {editingDriver ? 'Modifier le livreur' : 'Nouveau livreur'}
+                  {editingDriver ? 'Modifier le livreur' : 'Ajouter un livreur'}
                 </h3>
                 <button
                   onClick={resetDriverForm}
@@ -1306,7 +1277,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   </label>
                 </div>
 
-                <div className="flex space-x-3 pt-4">
+                <div className="flex space-x-4 pt-4">
                   <button
                     type="button"
                     onClick={resetDriverForm}
@@ -1325,7 +1296,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         <span>Sauvegarde...</span>
                       </>
                     ) : (
-                      <span>{editingDriver ? 'Modifier' : 'Créer'}</span>
+                      <span>{editingDriver ? 'Modifier' : 'Ajouter'}</span>
                     )}
                   </button>
                 </div>
