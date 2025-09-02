@@ -45,7 +45,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   // Scroll to top when step changes
   const handleStepChange = (step: number) => {
     setCurrentStep(step);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+    setTimeout(scrollToTop, 100);
   };
 
   const iceTypes: IceType[] = [
@@ -653,37 +653,33 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             </div>
 
-            {/* Delivery Date and Time for Standard Delivery */}
             {!isExpressDelivery && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
-                    <input
-                      type="date"
-                      value={deliveryInfo.date}
-                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
-                    <select
-                      value={deliveryInfo.time}
-                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    >
-                      <option value="">Sélectionnez une heure</option>
-                      <option value="08:00-10:00">08:00 - 10:00</option>
-                      <option value="10:00-12:00">10:00 - 12:00</option>
-                      <option value="12:00-14:00">12:00 - 14:00</option>
-                      <option value="14:00-16:00">14:00 - 16:00</option>
-                      <option value="16:00-18:00">16:00 - 18:00</option>
-                      <option value="18:00-20:00">18:00 - 20:00</option>
-                    </select>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
+                  <input
+                    type="date"
+                    value={deliveryInfo.date}
+                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
+                  <select
+                    value={deliveryInfo.time}
+                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="">Sélectionnez une heure</option>
+                    <option value="08:00-10:00">08:00 - 10:00</option>
+                    <option value="10:00-12:00">10:00 - 12:00</option>
+                    <option value="12:00-14:00">12:00 - 14:00</option>
+                    <option value="14:00-16:00">14:00 - 16:00</option>
+                    <option value="16:00-18:00">16:00 - 18:00</option>
+                    <option value="18:00-20:00">18:00 - 20:00</option>
+                  </select>
                 </div>
               </div>
             )}
