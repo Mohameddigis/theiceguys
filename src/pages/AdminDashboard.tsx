@@ -3,7 +3,7 @@ import {
   ArrowLeft, Package, Users, TrendingUp, Clock, CheckCircle, XCircle, Truck, 
   Eye, Phone, Mail, MapPin, Calendar, Filter, Search, RefreshCw, LogOut, 
   Download, UserPlus, Navigation, Menu, X, Home, ShoppingCart, UserCheck,
-  Plus, Edit, Trash2, Star, AlertCircle, DollarSign
+  Plus, Edit, Trash2, Star, AlertCircle, DollarSign, User, MessageCircle
 } from 'lucide-react';
 import { orderService, driverService, Order, Customer, DeliveryDriver, supabase } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
@@ -461,30 +461,131 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const renderCustomers = () => (
     <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">Total Clients</p>
+              <p className="text-2xl font-bold text-slate-900">{customers.length}</p>
+            </div>
+            <Users className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">Professionnels</p>
+              <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'professional').length}</p>
+            </div>
+            <Package className="h-8 w-8 text-green-500" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">Particuliers</p>
+              <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'individual').length}</p>
+            </div>
+            <User className="h-8 w-8 text-purple-500" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-brand-primary">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">CA Total Clients</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {customers.reduce((total, customer) => {
+                  const customerOrders = orders.filter(o => o.customer_id === customer.id && o.status === 'delivered');
+                  return total + customerOrders.reduce((sum, o) => sum + o.total, 0);
+                }, 0)} MAD
+              </p>
+            </div>
+            <DollarSign className="h-8 w-8 text-brand-primary" />
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Rechercher</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Nom, email, téléphone..."
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Type de client</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+            >
+              <option value="all">Tous les types</option>
+              <option value="professional">Professionnels</option>
+              <option value="individual">Particuliers</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900">Clients ({customers.length})</h2>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-slate-600">
-              {customers.filter(c => c.type === 'professional').length} Professionnels, 
-              {customers.filter(c => c.type === 'individual').length} Particuliers
-            </span>
+          <h2 className="text-xl font-semibold text-slate-900">
+            Clients ({filteredCustomers.length})
+          </h2>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span className="text-sm text-slate-600">Professionnels</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span className="text-sm text-slate-600">Particuliers</span>
+            </div>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {customers.map((customer) => {
+          {filteredCustomers.map((customer) => {
             const customerOrders = orders.filter(o => o.customer_id === customer.id);
             const totalSpent = customerOrders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total, 0);
+            const lastOrderDate = customerOrders.length > 0 
+              ? new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))
+              : null;
             
             return (
-              <div key={customer.id} className="bg-slate-50 rounded-lg p-6 border border-slate-200">
+              <div key={customer.id} className="bg-slate-50 rounded-lg p-6 border border-slate-200 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-slate-900">{customer.name}</h3>
                     {customer.contact_name && (
                       <p className="text-sm text-slate-600">Contact: {customer.contact_name}</p>
                     )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      Inscrit le {new Date(customer.created_at).toLocaleDateString('fr-FR')}
+                    </p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     customer.type === 'professional' 
@@ -498,30 +599,110 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 <div className="space-y-2 text-sm text-slate-600 mb-4">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4" />
-                    <span>{customer.phone}</span>
+                    <a href={`tel:${customer.phone}`} className="hover:text-brand-primary transition-colors">{customer.phone}</a>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4" />
-                    <span>{customer.email}</span>
+                    <a href={`mailto:${customer.email}`} className="hover:text-brand-primary transition-colors">{customer.email}</a>
+                  </div>
+                  {lastOrderDate && (
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>Dernière commande: {lastOrderDate.toLocaleDateString('fr-FR')}</span>
+                    </div>
+                  )}
                   </div>
                 </div>
                 
                 <div className="border-t border-slate-200 pt-4">
-                  <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="grid grid-cols-3 gap-2 text-center">
                     <div>
-                      <p className="text-2xl font-bold text-slate-900">{customerOrders.length}</p>
-                      <p className="text-xs text-slate-600">Commandes</p>
+                      <p className="text-lg font-bold text-slate-900">{customerOrders.length}</p>
+                      <p className="text-xs text-slate-600">Total</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-green-600">{totalSpent} MAD</p>
-                      <p className="text-xs text-slate-600">Total dépensé</p>
+                      <p className="text-lg font-bold text-green-600">{customerOrders.filter(o => o.status === 'delivered').length}</p>
+                      <p className="text-xs text-slate-600">Livrées</p>
                     </div>
+                    <div>
+                      <p className="text-lg font-bold text-brand-primary">{totalSpent}</p>
+                      <p className="text-xs text-slate-600">MAD</p>
+                    </div>
+                  </div>
+                  
+                  {/* Customer Rating */}
+                  <div className="mt-4 pt-3 border-t border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-600">Statut client:</span>
+                      <div className="flex items-center space-x-1">
+                        {totalSpent >= 1000 ? (
+                          <>
+                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                            <span className="text-xs font-medium text-yellow-600">VIP</span>
+                          </>
+                        ) : totalSpent >= 500 ? (
+                          <>
+                            <Star className="h-4 w-4 text-blue-400 fill-current" />
+                            <span className="text-xs font-medium text-blue-600">Premium</span>
+                          </>
+                        ) : (
+                          <>
+                            <User className="h-4 w-4 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-600">Standard</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200">
+                    <a
+                      href={`tel:${customer.phone}`}
+                      className="text-green-600 hover:text-green-700 transition-colors p-2 rounded-lg hover:bg-green-50"
+                      title="Appeler"
+                    >
+                      <Phone className="h-4 w-4" />
+                    </a>
+                    <a
+                      href={`mailto:${customer.email}`}
+                      className="text-blue-600 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50"
+                      title="Envoyer un email"
+                    >
+                      <Mail className="h-4 w-4" />
+                    </a>
+                    <a
+                      href={`https://wa.me/${customer.phone.replace(/\s/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:text-green-700 transition-colors p-2 rounded-lg hover:bg-green-50"
+                      title="WhatsApp"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </a>
+                    <button
+                      onClick={() => {
+                        const customerOrdersList = orders.filter(o => o.customer_id === customer.id);
+                        console.log('Commandes du client:', customerOrdersList);
+                      }}
+                      className="text-brand-primary hover:text-brand-secondary transition-colors p-2 rounded-lg hover:bg-blue-50"
+                      title="Voir les commandes"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+        
+        {filteredCustomers.length === 0 && (
+          <div className="text-center py-12">
+            <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500">Aucun client trouvé</p>
+          </div>
+        )}
       </div>
     </div>
   );
