@@ -44,8 +44,8 @@ serve(async (req) => {
     // Generate order confirmation email HTML
     const emailHtml = generateOrderConfirmationEmail(customerName, orderDetails);
 
-    // Send email using Supabase SMTP
-    const emailResponse = await sendEmailWithSupabaseSMTP({
+    // Send email using Resend
+    const emailResponse = await sendEmailWithResend({
       from: 'The Ice Guys <commandes@glaconsmarrakech.com>',
       to: customerEmail,
       subject: `Confirmation de commande The Ice Guys - ${orderDetails.orderNumber}`,
@@ -53,7 +53,7 @@ serve(async (req) => {
     });
 
     // Also send a copy to the business
-    await sendEmailWithSupabaseSMTP({
+    await sendEmailWithResend({
       from: 'The Ice Guys <commandes@glaconsmarrakech.com>',
       to: 'commandes@glaconsmarrakech.com',
       subject: `Nouvelle commande The Ice Guys - ${orderDetails.orderNumber}`,
@@ -79,7 +79,7 @@ serve(async (req) => {
   }
 })
 
-async function sendEmailWithSupabaseSMTP({ from, to, subject, html }: {
+async function sendEmailWithResend({ from, to, subject, html }: {
   from: string;
   to: string;
   subject: string;
@@ -91,30 +91,13 @@ async function sendEmailWithSupabaseSMTP({ from, to, subject, html }: {
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY environment variable is not set');
   }
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-  
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   try {
-    // Use Supabase's built-in SMTP functionality
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email: to,
-      options: {
-        emailRedirectTo: 'https://glaconsmarrakech.com'
-      }
-    })
-    
-    // Since we can't directly use Supabase SMTP for custom emails,
-    // we'll use a workaround with Resend API directly
+    // Send email using Resend API
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer re_KVqsc65u_pxYtgFeKtfypzKcpbvPS4RiK`,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
