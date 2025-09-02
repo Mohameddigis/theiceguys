@@ -81,6 +81,59 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
+  const sendStatusNotificationEmail = async (order: Order, newStatus: Order['status']) => {
+    try {
+      // Préparer les données de la commande pour l'email
+      const orderDetails = {
+        items: order.order_items?.map(item => ({
+          iceType: item.ice_type === 'nuggets' ? "Nugget's" : 
+                   item.ice_type === 'gourmet' ? 'Gourmet' : 
+                   'Glace Paillette',
+          quantities: {
+            '5kg': item.package_size === '5kg' ? item.quantity : 0,
+            '10kg': 0, // Pas utilisé dans ce projet
+            '20kg': item.package_size === '20kg' ? item.quantity : 0
+          },
+          totalPrice: item.total_price
+        })) || [],
+        deliveryInfo: {
+          type: order.delivery_type,
+          date: order.delivery_date,
+          time: order.delivery_time,
+          address: order.delivery_address
+        },
+        total: order.total,
+        customerType: order.customer?.type || 'individual',
+        companyName: order.customer?.contact_name
+      };
+
+      const emailData = {
+        customerEmail: order.customer?.email,
+        customerName: order.customer?.name,
+        orderNumber: order.order_number,
+        newStatus: newStatus,
+        orderDetails: orderDetails
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-status-notification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (response.ok) {
+        console.log('✅ Notification email envoyée avec succès');
+      } else {
+        console.error('❌ Erreur lors de l\'envoi de l\'email de notification');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'envoi de la notification:', error);
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       setUpdatingStatus(orderId);
