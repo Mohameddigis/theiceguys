@@ -44,9 +44,9 @@ serve(async (req) => {
     // Generate status notification email HTML
     const emailHtml = generateStatusNotificationEmail(customerName, orderNumber, newStatus, orderDetails);
 
-    // Send email using Resend API
+    // Send email using Resend API with custom domain
     const emailResponse = await sendEmailWithResend({
-      from: 'The Ice Guys <onboarding@resend.dev>',
+      from: 'The Ice Guys <commandes@glaconsmarrakech.com>',
       to: customerEmail,
       subject: `Mise à jour de votre commande The Ice Guys - ${orderNumber}`,
       html: emailHtml
@@ -77,11 +77,8 @@ async function sendEmailWithResend({ from, to, subject, html }: {
   subject: string;
   html: string;
 }) {
-  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-  
-  if (!RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY environment variable is not configured');
-  }
+  // Use the Resend API key you provided
+  const RESEND_API_KEY = 're_KVqsc65u_pxYtgFeKtfypzKcpbvPS4RiK';
   
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
