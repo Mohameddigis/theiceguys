@@ -15,6 +15,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const ADMIN_EMAIL = 'commandes@glaconsmarrakech.com';
   const ADMIN_PASSWORD = 'Glaconsmarrakech2025.';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +75,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                   onChange={handleInputChange}
                   required
                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-colors"
-                  placeholder="commandes@theiceguys.com"
+                  placeholder="commandes@glaconsmarrakech.com"
                 />
               </div>
             </div>
