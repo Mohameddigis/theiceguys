@@ -1,7 +1,11 @@
 import React from 'react';
 import { MapPin, MessageCircle, Mail, Clock } from 'lucide-react';
 
-function Footer() {
+interface FooterProps {
+  onPageChange?: (page: string) => void;
+}
+
+function Footer({ onPageChange }: FooterProps) {
   return (
     <footer className="bg-slate-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -104,12 +108,12 @@ function Footer() {
 
         {/* Admin Link */}
         <div className="border-t border-slate-800 mt-8 pt-8 text-center">
-          <a
-            href="#admin"
+          <button
+            onClick={() => onPageChange?.('admin')}
             className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm mb-4"
           >
             <span>Administration</span>
-          </a>
+          </button>
         </div>
 
         {/* Copyright */}

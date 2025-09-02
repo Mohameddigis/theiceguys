@@ -212,7 +212,7 @@ function App() {
       
       {/* Footer - visible on all pages except order */}
       {currentPage !== 'order' && currentPage !== 'admin' && currentPage !== 'driver' && (
-        <Footer />
+        <Footer onPageChange={handlePageChange} />
       )}
       
       {/* WhatsApp Widget - Mobile only */}
