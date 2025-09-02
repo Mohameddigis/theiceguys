@@ -909,3 +909,5 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     </div>
   );
 }
+
+export default ProfessionalOrderPage;
