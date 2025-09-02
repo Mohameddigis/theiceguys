@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Building2, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check } from 'lucide-react';
-import MapboxGeocoderComponent from '../components/MapboxGeocoder';
-import MapboxMap from '../components/MapboxMap';
-import { checkDeliveryZone, getDeliveryZoneMessage } from '../utils/deliveryZone';
 import { orderService } from '../lib/supabase';
 
 interface ProfessionalOrderPageProps {
@@ -35,10 +32,9 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
-    address: '',
-    coordinates: [0, 0] as [number, number],
-    isInDeliveryZone: false,
-    deliveryZoneMessage: ''
+    street: '',
+    number: '',
+    address: ''
   });
   const [customerInfo, setCustomerInfo] = useState({
     companyName: '',
@@ -145,13 +141,11 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   };
 
   const canProceedToStep3 = () => {
-    if (!deliveryInfo.isInDeliveryZone) {
-      return false;
-    }
+    const fullAddress = deliveryInfo.address.trim();
     if (isExpressDelivery) {
-      return deliveryInfo.address.trim() !== '';
+      return fullAddress !== '';
     }
-    return deliveryInfo.date !== '' && deliveryInfo.time !== '' && deliveryInfo.address.trim() !== '';
+    return deliveryInfo.date !== '' && deliveryInfo.time !== '' && fullAddress !== '';
   };
 
   const handleExpressDeliveryToggle = () => {
@@ -161,17 +155,13 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     }
   };
 
-  const handleAddressSelect = (address: string, coordinates: [number, number]) => {
-    const deliveryCheck = checkDeliveryZone(coordinates);
-    const message = getDeliveryZoneMessage(deliveryCheck.distance);
-    
-    setDeliveryInfo(prev => ({ 
-      ...prev, 
-      address, 
-      coordinates,
-      isInDeliveryZone: deliveryCheck.isInZone,
-      deliveryZoneMessage: message
-    }));
+  const handleAddressChange = (field: 'street' | 'number', value: string) => {
+    setDeliveryInfo(prev => {
+      const updated = { ...prev, [field]: value };
+      // Construire l'adresse complète
+      const fullAddress = `${updated.number} ${updated.street}, Marrakech`.trim();
+      return { ...updated, address: fullAddress };
+    });
   };
 
   const generateWhatsAppMessage = () => {
@@ -307,7 +297,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                        (item.quantities['10kg'] * item.iceType.price10kg) +
                        (item.quantities['20kg'] * item.iceType.price20kg)
           })),
-          deliveryInfo: {
+          delivery: {
+            delivery_coordinates: null,
             type: isExpressDelivery ? 'express' : 'standard',
             date: deliveryInfo.date,
             time: deliveryInfo.time,
@@ -639,53 +630,49 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Adresse de livraison</h3>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Rechercher une adresse
-                  </label>
-                <MapboxGeocoderComponent
-                  onAddressSelect={handleAddressSelect}
-                  placeholder="Rechercher l'adresse de votre établissement..."
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Numéro *
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryInfo.number}
+                      onChange={(e) => handleAddressChange('number', e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                      placeholder="123"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Rue *
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryInfo.street}
+                      onChange={(e) => handleAddressChange('street', e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                      placeholder="Rue Mohammed V"
+                    />
+                  </div>
                 </div>
                 
-                <div className="border-t pt-4">
-                  <MapboxMap
-                    onAddressSelect={handleAddressSelect}
-                    selectedCoordinates={deliveryInfo.coordinates[0] !== 0 ? deliveryInfo.coordinates : undefined}
-                  />
-                </div>
-                
-                {deliveryInfo.address && (
-                  <div className={`rounded-lg p-4 ${
-                    deliveryInfo.isInDeliveryZone 
-                      ? 'bg-blue-50 border border-blue-200' 
-                      : 'bg-red-50 border border-red-200'
-                  }`}>
-                    <div className="flex items-start space-x-3">
-                      <MapPin className={`h-5 w-5 mt-0.5 ${
-                        deliveryInfo.isInDeliveryZone ? 'text-brand-primary' : 'text-red-600'
-                      }`} />
-                      <div>
-                        <p className="font-medium text-slate-900">Adresse sélectionnée:</p>
-                        <p className="text-slate-600">{deliveryInfo.address}</p>
-                        <p className={`text-sm mt-2 font-medium ${
-                          deliveryInfo.isInDeliveryZone ? 'text-blue-700' : 'text-red-700'
-                        }`}>
-                          {deliveryInfo.deliveryZoneMessage}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="h-5 w-5 mt-0.5 text-brand-primary" />
+                    <div>
+                      <p className="font-medium text-slate-900">Ville : Marrakech</p>
+                      {deliveryInfo.address && (
+                        <p className="text-slate-600 mt-1">
+                          <strong>Adresse complète :</strong> {deliveryInfo.address}
                         </p>
-                        {!deliveryInfo.isInDeliveryZone && (
-                          <div className="mt-3 p-3 bg-red-100 rounded-lg">
-                            <p className="text-red-800 text-sm">
-                              <strong>Zone de livraison :</strong> Nous livrons uniquement dans un rayon de 20 km autour de Marrakech. 
-                              Veuillez choisir une adresse plus proche du centre-ville.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      )}
+                      <p className="text-sm text-blue-700 mt-2">
+                        ✅ Zone de livraison couverte
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
@@ -706,17 +693,14 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
               </button>
               <button
                 onClick={() => handleStepChange(3)}
-                disabled={!canProceedToStep3()}
+                disabled={!deliveryInfo.street || !deliveryInfo.number || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
                 className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
-                  canProceedToStep3()
+                  (deliveryInfo.street && deliveryInfo.number && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
                     ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:shadow-lg'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
               >
-                {deliveryInfo.address && !deliveryInfo.isInDeliveryZone 
-                  ? 'Adresse hors zone de livraison' 
-                  : 'Continuer vers les informations'
-                }
+                Continuer vers les informations
               </button>
             </div>
           </div>
