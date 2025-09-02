@@ -102,10 +102,10 @@ function Hero({ onOrderClick }: HeroProps) {
             <div className="space-y-6">
               <h1 className="w-[90%] mx-auto text-5xl sm:text-6xl lg:text-8xl font-bold leading-tight drop-shadow-lg">
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-light to-brand-secondary">
-                  GLAÇONS
+                  THE ICE
                 </span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-light via-brand-secondary to-white">
-                  MARRAKECH
+                  GUYS
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
@@ -257,7 +257,7 @@ function Hero({ onOrderClick }: HeroProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Prêt à passer commande ?</h2>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Rejoignez nos clients satisfaits et découvrez la qualité Glaçons Marrakech.
+            Rejoignez nos clients satisfaits et découvrez la qualité The Ice Guys.
             Commandez dès maintenant ou contactez-nous pour plus d'informations.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">

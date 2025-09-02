@@ -18,9 +18,9 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
 
   // Livreurs de test (en production, cela viendrait de la base de données)
   const TEST_DRIVERS = [
-    { id: '1', email: 'ahmed.livreur@glaconsmarrakech.com', password: 'Ahmed2025', name: 'Ahmed Benali' },
-    { id: '2', email: 'youssef.livreur@glaconsmarrakech.com', password: 'Youssef2025', name: 'Youssef Alami' },
-    { id: '3', email: 'omar.livreur@glaconsmarrakech.com', password: 'Omar2025', name: 'Omar Tazi' }
+    { id: '1', email: 'ahmed.livreur@theiceguys.com', password: 'Ahmed2025', name: 'Ahmed Benali' },
+    { id: '2', email: 'youssef.livreur@theiceguys.com', password: 'Youssef2025', name: 'Youssef Alami' },
+    { id: '3', email: 'omar.livreur@theiceguys.com', password: 'Omar2025', name: 'Omar Tazi' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -184,7 +184,7 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
           {/* Security notice */}
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-500">
-              🚚 Espace réservé aux livreurs Glaçons Marrakech
+              🚚 Espace réservé aux livreurs The Ice Guys
             </p>
           </div>
         </div>

@@ -67,7 +67,7 @@ const generateOrderHTML = (order: Order): string => {
       <!-- Header -->
       <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #0e7eac; padding-bottom: 20px;">
         <h1 style="color: #0e7eac; font-size: 28px; margin: 0;">🧊 THE ICE GUYS</h1>
-        <p style="color: #666; margin: 5px 0;">Glaçons Premium - Marrakech</p>
+        <p style="color: #666; margin: 5px 0;">Premium Ice - Marrakech</p>
         <p style="color: #666; margin: 0; font-size: 14px;">📍 Chrifia, Marrakech | 📞 +212 693 675 981</p>
       </div>
 
@@ -154,9 +154,9 @@ const generateOrderHTML = (order: Order): string => {
 
       <!-- Footer -->
       <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; color: #666; font-size: 14px;">
-        <p style="margin: 5px 0;"><strong>Glaçons Marrakech - Glaçons Premium</strong></p>
+        <p style="margin: 5px 0;"><strong>The Ice Guys - Premium Ice</strong></p>
         <p style="margin: 5px 0;">📍 Chrifia, Marrakech | 📞 +212 693 675 981</p>
-        <p style="margin: 5px 0;">📧 commandes@glaconsmarrakech.com</p>
+        <p style="margin: 5px 0;">📧 commandes@theiceguys.com</p>
         <p style="margin: 15px 0 5px 0; font-size: 12px;">Merci de votre confiance !</p>
       </div>
     </div>

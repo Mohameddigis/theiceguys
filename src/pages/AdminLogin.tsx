@@ -16,7 +16,8 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [loading, setLoading] = useState(false);
 
   const ADMIN_EMAIL = 'commandes@glaconsmarrakech.com';
-  const ADMIN_PASSWORD = 'Glaconsmarrakech2025.';
+  const ADMIN_EMAIL = 'commandes@theiceguys.com';
+  const ADMIN_PASSWORD = 'TheIceGuys2025.';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +57,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
               <Lock className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Administration</h1>
-            <p className="text-slate-600">Glaçons Marrakech - Connexion sécurisée</p>
+            <p className="text-slate-600">The Ice Guys - Connexion sécurisée</p>
           </div>
 
           {/* Form */}
@@ -75,7 +76,7 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                   onChange={handleInputChange}
                   required
                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-colors"
-                  placeholder="commandes@glaconsmarrakech"
+                  placeholder="commandes@theiceguys.com"
                 />
               </div>
             </div>

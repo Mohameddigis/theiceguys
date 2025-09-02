@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const { name, phone, email, password, is_active, current_status, adminSecret }: CreateDriverRequest = await req.json()
 
     // Verify admin secret
-    if (adminSecret !== 'Glaconsmarrakech2025.') {
+    if (adminSecret !== 'TheIceGuys2025.') {
       return new Response(
         JSON.stringify({ success: false, error: 'Accès non autorisé' }),
         {

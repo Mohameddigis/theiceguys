@@ -46,7 +46,7 @@ serve(async (req) => {
 
     // Send email using Resend API
     const emailResponse = await sendEmailWithResend({
-      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
+      from: 'The Ice Guys <commandes@theiceguys.com>',
       to: customerEmail,
       subject: `Mise à jour de votre commande The Ice Guys - ${orderNumber}`,
       html: emailHtml
@@ -389,6 +389,7 @@ function generateStatusNotificationEmail(customerName: string, orderNumber: stri
                     
                     <div class="company-info">
                         <p><strong>Merci de faire confiance à Glaçons Marrakech !</strong></p>
+                       <p><strong>Merci de faire confiance à The Ice Guys !</strong></p>
                         <p>Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.</p>
                     </div>
                 </div>

@@ -45,7 +45,7 @@ serve(async (req) => {
 
     // Send email using Resend API
     const emailResponse = await sendEmailWithResend({
-      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
+      from: 'The Ice Guys <commandes@theiceguys.com>',
       to: customerEmail,
       subject: `Confirmation de commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: emailHtml
@@ -53,8 +53,8 @@ serve(async (req) => {
 
     // Also send a copy to the business
     await sendEmailWithResend({
-      from: 'Glaçons Marrakech <commandes@glaconsmarrakech.com>',
-      to: 'commandes@glaconsmarrakech.com',
+      from: 'The Ice Guys <commandes@theiceguys.com>',
+      to: 'commandes@theiceguys.com',
       subject: `Nouvelle commande The Ice Guys - ${orderDetails.orderNumber}`,
       html: generateBusinessNotificationEmail(customerName, orderDetails)
     });
@@ -362,8 +362,9 @@ function generateOrderConfirmationEmail(customerName: string, orderDetails: any)
                     
                     <div class="company-info">
                         <p><strong>Merci de faire confiance à The Ice Guys !</strong></p>
+                       <p><strong>Merci de faire confiance à The Ice Guys !</strong></p>
                         <p>Votre partenaire de confiance pour des glaçons de qualité supérieure à Marrakech.<br>
-                        Nous servons les professionnels et particuliers avec la qualité que vous méritez.</p>
+                       Nous servons les professionnels et particuliers avec la qualité que vous méritez.</p>
                     </div>
                 </div>
             </div>

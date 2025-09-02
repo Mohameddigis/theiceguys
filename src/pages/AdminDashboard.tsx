@@ -73,16 +73,16 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       
       // Authentifier avec l'email admin
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'commandes@glaconsmarrakech.com',
-        password: 'Glaconsmarrakech2025.'
+        email: 'commandes@theiceguys.com',
+        password: 'TheIceGuys2025.'
       });
       
       if (error) {
         console.error('❌ Erreur authentification admin:', error);
         // Fallback: créer le compte admin s'il n'existe pas
         const { error: signUpError } = await supabase.auth.signUp({
-          email: 'commandes@glaconsmarrakech.com',
-          password: 'Glaconsmarrakech2025.'
+          email: 'commandes@theiceguys.com',
+          password: 'TheIceGuys2025.'
         });
         
         if (signUpError) {
@@ -149,7 +149,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
           password: newDriver.password,
           is_active: true,
           current_status: 'offline',
-          adminSecret: 'Glaconsmarrakech2025.'
+          adminSecret: 'TheIceGuys2025.'
         })
       });
 
@@ -718,7 +718,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </button>
             <div className="flex items-center space-x-3">
               <Package className="h-6 w-6 text-brand-primary" />
-              <h1 className="text-2xl font-bold text-slate-900">Administration Glaçons Marrakech</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Administration The Ice Guys</h1>
             </div>
             <div className="flex items-center space-x-3">
               <button
