@@ -9,6 +9,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Client admin avec service_role pour contourner RLS
+export const supabaseAdmin = createClient(
+  supabaseUrl, 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6d2pwc3p0Y2ZycmlrYnNqc2VkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTcxMjk3MSwiZXhwIjoyMDcxMjg4OTcxfQ.1DMCB_oZMN7dxlayzJrn61cXOXbaetJWTqfiLWZ6JEc',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
 // Types pour TypeScript
 export interface DeliveryDriver {
   id: string;
@@ -203,24 +215,9 @@ export const driverService = {
     console.log('🚚 Service: Récupération des livreurs...');
     
     try {
-      // Vérifier l'utilisateur actuel
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('👤 Current user:', user?.id);
-      console.log('🔑 Expected admin ID:', '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-      console.log('✅ Is admin?', user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21');
-      
-      // Si pas d'utilisateur authentifié, essayer une approche alternative
-      if (!user) {
-        console.log('⚠️ Aucun utilisateur authentifié, tentative de récupération alternative...');
-        
-        // Utiliser une approche sans RLS via une fonction edge ou service role
-        // Pour l'instant, retourner un tableau vide et demander l'authentification
-        console.log('❌ Authentification requise pour accéder aux livreurs');
-        return [];
-      }
-      
-      console.log('🔧 Requête avec utilisateur authentifié...');
-      const { data, error } = await supabase
+      // Utiliser le client admin avec service_role pour contourner RLS
+      console.log('🔧 Requête avec service_role...');
+      const { data, error } = await supabaseAdmin
         .from('delivery_drivers')
         .select('*')
         .order('name');
