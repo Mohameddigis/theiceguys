@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Users, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check, Navigation } from 'lucide-react';
 import { orderService } from '../lib/supabase';
 
-interface IndividualOrderPageProps {
+interface ProfessionalOrderPageProps {
   onBack: () => void;
 }
 
@@ -25,7 +25,7 @@ interface OrderItem {
   };
 }
 
-function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
+function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
@@ -414,8 +414,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               <span>Retour</span>
             </button>
             <div className="flex items-center space-x-3">
-              <Users className="h-6 w-6 text-green-600" />
-              <h1 className="text-xl font-bold text-slate-900">Commande Particulier</h1>
+              <Package className="h-6 w-6 text-blue-600" />
+              <h1 className="text-xl font-bold text-slate-900">Commande Professionnelle</h1>
             </div>
           </div>
         </div>
@@ -908,5 +908,3 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     </div>
   );
 }
-
-export default IndividualOrderPage;
