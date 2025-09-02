@@ -190,7 +190,13 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 coordinates: [longitude, latitude]
               }));
             } else {
-              throw new Error('No address found');
+             // Fallback: use coordinates as address
+             const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
+             setDeliveryInfo(prev => ({
+               ...prev,
+               address: fallbackAddress,
+               coordinates: [longitude, latitude]
+             }));
             }
           } else {
             throw new Error('Geocoding failed');
