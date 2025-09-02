@@ -32,8 +32,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
-    address: '',
-    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -42,11 +40,12 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     notes: ''
   });
 
-  // Scroll to top when step changes
+  // Scroll to top function
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   };
 
+  // Scroll to top when step changes
   const handleStepChange = (step: number) => {
     setCurrentStep(step);
     setTimeout(scrollToTop, 100);
@@ -657,7 +656,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             </div>
 
-            {/* Delivery Schedule (only for standard delivery) */}
+            {/* Delivery Date and Time (only for standard delivery) */}
             {!isExpressDelivery && (
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
