@@ -214,29 +214,27 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
 
     try {
-      // Vérifier s'il y a des commandes assignées
-      const { data: assignedOrders } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('assigned_driver_id', driverId)
-        .in('status', ['confirmed', 'delivering']);
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-driver`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          driverId,
+          adminSecret: 'TheIceGuys2025.'
+        })
+      });
 
-      if (assignedOrders && assignedOrders.length > 0) {
-        alert('Impossible de supprimer ce livreur car il a des commandes en cours. Veuillez d\'abord réassigner ses commandes.');
-        return;
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error);
       }
-
-      // Supprimer le livreur
-      const { error } = await supabase
-        .from('delivery_drivers')
-        .delete()
-        .eq('id', driverId);
-
-      if (error) throw error;
 
       console.log('✅ Livreur supprimé avec succès');
       await loadDrivers();
-      
+      alert('Livreur supprimé avec succès');
       // Fermer la vue détaillée si c'était le livreur sélectionné
       if (selectedDriver && selectedDriver.id === driverId) {
         setSelectedDriver(null);
