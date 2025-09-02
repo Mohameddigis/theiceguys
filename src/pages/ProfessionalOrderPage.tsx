@@ -590,12 +590,10 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
               <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
                 <button
                   onClick={() => handleStepChange(2)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-3"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3"
                 >
-                  <span className="text-center">
-                    <span className="block sm:hidden">Continuer</span>
-                    <span className="hidden sm:block">Continuer vers la livraison</span>
-                  </span>
+                  <span className="hidden sm:block">Continuer vers la livraison</span>
+                  <span className="block sm:hidden">Continuer</span>
                   <div className="bg-white bg-opacity-20 rounded-full p-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
