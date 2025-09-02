@@ -504,164 +504,165 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
         </div>
       ) : (
         // Liste des commandes
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Rechercher</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="N° commande, client, email..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-              />
+        <div className="space-y-6">
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Rechercher</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="N° commande, client, email..."
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Statut</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="confirmed">Confirmées</option>
+                  <option value="delivering">En livraison</option>
+                  <option value="delivered">Livrées</option>
+                  <option value="cancelled">Annulées</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                    setDateFilter('');
+                  }}
+                  className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Réinitialiser
+                </button>
+              </div>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Statut</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-            >
-              <option value="all">Tous les statuts</option>
-              <option value="pending">En attente</option>
-              <option value="confirmed">Confirmées</option>
-              <option value="delivering">En livraison</option>
-              <option value="delivered">Livrées</option>
-              <option value="cancelled">Annulées</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Date</label>
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-            />
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('all');
-                setDateFilter('');
-              }}
-              className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
-            >
-              Réinitialiser
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Orders List */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Commandes ({filteredOrders.length})
-          </h2>
+          {/* Orders List */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Commandes ({filteredOrders.length})
+              </h2>
+            </div>
+            
+            {loading ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary mx-auto"></div>
+                <p className="mt-2 text-slate-600">Chargement des commandes...</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <Package className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                <p>Aucune commande trouvée</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Commande
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Statut
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Total
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {filteredOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <p className="font-medium text-slate-900">{order.order_number}</p>
+                            <p className="text-sm text-slate-500">
+                              {order.customer?.type === 'professional' ? 'Pro' : 'Part'}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="font-medium text-slate-900">{order.customer?.name}</p>
+                            <p className="text-sm text-slate-500">{order.customer?.phone}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm border ${getStatusColor(order.status)}`}>
+                            {getStatusIcon(order.status)}
+                            <span>{getStatusLabel(order.status)}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <p className="font-semibold text-slate-900">{order.total} MAD</p>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <p className="text-sm text-slate-900">
+                            {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setTimeout(scrollToTop, 100);
+                              }}
+                              className="text-brand-primary hover:text-brand-secondary transition-colors"
+                              title="Voir les détails"
+                            >
+                              <Eye className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDownloadPDF(order)}
+                              className="text-green-600 hover:text-green-700 transition-colors"
+                              title="Télécharger le bon de commande"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-        
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary mx-auto"></div>
-            <p className="mt-2 text-slate-600">Chargement des commandes...</p>
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
-            <Package className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-            <p>Aucune commande trouvée</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Commande
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Statut
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <p className="font-medium text-slate-900">{order.order_number}</p>
-                        <p className="text-sm text-slate-500">
-                          {order.customer?.type === 'professional' ? 'Pro' : 'Part'}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-slate-900">{order.customer?.name}</p>
-                        <p className="text-sm text-slate-500">{order.customer?.phone}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm border ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        <span>{getStatusLabel(order.status)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="font-semibold text-slate-900">{order.total} MAD</p>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-slate-900">
-                        {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setTimeout(scrollToTop, 100);
-                          }}
-                          className="text-brand-primary hover:text-brand-secondary transition-colors"
-                          title="Voir les détails"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadPDF(order)}
-                          className="text-green-600 hover:text-green-700 transition-colors"
-                          title="Télécharger le bon de commande"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
       )}
     </div>
   );
@@ -678,171 +679,171 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     });
 
     return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Total Clients</p>
-              <p className="text-2xl font-bold text-slate-900">{customers.length}</p>
-            </div>
-            <Users className="h-8 w-8 text-blue-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Professionnels</p>
-              <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'professional').length}</p>
-            </div>
-            <Package className="h-8 w-8 text-green-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">Particuliers</p>
-              <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'individual').length}</p>
-            </div>
-            <User className="h-8 w-8 text-purple-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-brand-primary">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600">CA Total Clients</p>
-              <p className="text-2xl font-bold text-slate-900">
-                {customers.reduce((total, customer) => {
-                  const customerOrders = orders.filter(o => o.customer_id === customer.id && o.status === 'delivered');
-                  return total + customerOrders.reduce((sum, o) => sum + o.total, 0);
-                }, 0)} MAD
-              </p>
-            </div>
-            <DollarSign className="h-8 w-8 text-brand-primary" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Rechercher</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Nom, email, téléphone..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Type de client</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-            >
-              <option value="all">Tous les types</option>
-              <option value="professional">Professionnels</option>
-              <option value="individual">Particuliers</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('all');
-              }}
-              className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
-            >
-              Réinitialiser
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900">
-            Clients ({filteredCustomers.length})
-          </h2>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-slate-600">Professionnels</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span className="text-sm text-slate-600">Particuliers</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCustomers.map((customer) => {
-            const customerOrders = orders.filter(o => o.customer_id === customer.id);
-            const totalSpent = customerOrders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total, 0);
-            const lastOrderDate = customerOrders.length > 0 
-              ? new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))
-              : null;
-            
-            return (
-              <div key={customer.id} className="bg-slate-50 rounded-lg p-6 border border-slate-200 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-semibold text-slate-900">{customer.name}</h3>
-                    {customer.contact_name && (
-                      <p className="text-sm text-slate-600">Contact: {customer.contact_name}</p>
-                    )}
-                    <p className="text-xs text-slate-500 mt-1">
-                      Inscrit le {new Date(customer.created_at).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    customer.type === 'professional' 
-                      ? 'bg-blue-100 text-blue-800' 
-                      : 'bg-green-100 text-green-800'
-                  }`}>
-                    {customer.type === 'professional' ? 'Pro' : 'Part'}
-                  </span>
-                </div>
-                
-                <div className="space-y-2 text-sm text-slate-600 mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4" />
-                    <a href={`tel:${customer.phone}`} className="hover:text-brand-primary transition-colors">{customer.phone}</a>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4" />
-                    <a href={`mailto:${customer.email}`} className="hover:text-brand-primary transition-colors">{customer.email}</a>
-                  </div>
-                  {lastOrderDate && (
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>Dernière commande: {lastOrderDate.toLocaleDateString('fr-FR')}</span>
-                    </div>
-                  )}
-                  </div>
+      <div className="space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Total Clients</p>
+                <p className="text-2xl font-bold text-slate-900">{customers.length}</p>
               </div>
-            );
-          })}
-        </div>
-        
-        {filteredCustomers.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500">Aucun client trouvé</p>
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
           </div>
-        )}
+          
+          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Professionnels</p>
+                <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'professional').length}</p>
+              </div>
+              <Package className="h-8 w-8 text-green-500" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Particuliers</p>
+                <p className="text-2xl font-bold text-slate-900">{customers.filter(c => c.type === 'individual').length}</p>
+              </div>
+              <User className="h-8 w-8 text-purple-500" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-brand-primary">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">CA Total Clients</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {customers.reduce((total, customer) => {
+                    const customerOrders = orders.filter(o => o.customer_id === customer.id && o.status === 'delivered');
+                    return total + customerOrders.reduce((sum, o) => sum + o.total, 0);
+                  }, 0)} MAD
+                </p>
+              </div>
+              <DollarSign className="h-8 w-8 text-brand-primary" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Rechercher</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Nom, email, téléphone..."
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Type de client</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+              >
+                <option value="all">Tous les types</option>
+                <option value="professional">Professionnels</option>
+                <option value="individual">Particuliers</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                }}
+                className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-slate-900">
+              Clients ({filteredCustomers.length})
+            </h2>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Professionnels</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-sm text-slate-600">Particuliers</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCustomers.map((customer) => {
+              const customerOrders = orders.filter(o => o.customer_id === customer.id);
+              const totalSpent = customerOrders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total, 0);
+              const lastOrderDate = customerOrders.length > 0 
+                ? new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))
+                : null;
+              
+              return (
+                <div key={customer.id} className="bg-slate-50 rounded-lg p-6 border border-slate-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">{customer.name}</h3>
+                      {customer.contact_name && (
+                        <p className="text-sm text-slate-600">Contact: {customer.contact_name}</p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-1">
+                        Inscrit le {new Date(customer.created_at).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      customer.type === 'professional' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {customer.type === 'professional' ? 'Pro' : 'Part'}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-slate-600 mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-4 w-4" />
+                      <a href={`tel:${customer.phone}`} className="hover:text-brand-primary transition-colors">{customer.phone}</a>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4" />
+                      <a href={`mailto:${customer.email}`} className="hover:text-brand-primary transition-colors">{customer.email}</a>
+                    </div>
+                    {lastOrderDate && (
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Dernière commande: {lastOrderDate.toLocaleDateString('fr-FR')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {filteredCustomers.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">Aucun client trouvé</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     );
   };
 
