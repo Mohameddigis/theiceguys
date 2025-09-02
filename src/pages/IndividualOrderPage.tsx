@@ -32,6 +32,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
+    address: '',
+    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -43,7 +45,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   // Scroll to top when step changes
   const handleStepChange = (step: number) => {
     setCurrentStep(step);
-    setTimeout(scrollToTop, 100);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
   };
 
   const iceTypes: IceType[] = [
@@ -646,15 +648,26 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 <p className="text-orange-700 font-semibold mb-2">Livrer en moins de 1H</p>
                 <p className="text-sm text-orange-600 mb-2">Disponible de 8h à 23h</p>
                 <div className="bg-orange-100 rounded-lg p-3">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Adresse complète *
-                  </label>
-                  <input
-                    type="text"
-                    value={deliveryInfo.address}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  <span className="text-orange-800 font-semibold">+100 MAD</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Date and Time for Standard Delivery */}
+            {!isExpressDelivery && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
+                    <input
+                      type="date"
+                      value={deliveryInfo.date}
+                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
                     <select
