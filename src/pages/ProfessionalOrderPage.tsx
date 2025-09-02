@@ -402,7 +402,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -428,7 +428,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
           <div className="flex items-center justify-between relative">
             <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-200"></div>
             <div 
-              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
+              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
               style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
             ></div>
             
@@ -441,13 +441,13 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <div key={step.number} className="flex flex-col items-center relative z-10">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isActive 
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg' 
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
                       : 'bg-white border-2 border-slate-300 text-slate-400'
                   } ${isCurrent ? 'scale-110 shadow-xl' : ''}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className={`mt-2 text-sm font-medium ${
-                    isActive ? 'text-green-600' : 'text-slate-400'
+                    isActive ? 'text-blue-600' : 'text-slate-400'
                   }`}>
                     {step.title}
                   </span>
@@ -477,7 +477,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     key={iceType.id} 
                     onClick={() => handleIceTypeToggle(iceType)}
                     className={`bg-white rounded-xl shadow-lg border-2 transition-all duration-300 cursor-pointer hover:shadow-xl ${
-                    isSelected ? 'border-green-500 shadow-xl' : 'border-slate-200 hover:border-green-300'
+                    isSelected ? 'border-blue-500 shadow-xl' : 'border-slate-200 hover:border-blue-300'
                   }`}>
                    {/* Ice Type Image */}
                    <div className="aspect-video bg-gradient-to-br from-blue-100 to-cyan-100 relative overflow-hidden rounded-t-xl">
@@ -488,7 +488,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                      {isSelected && (
-                       <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full p-2">
+                       <div className="absolute top-3 right-3 bg-blue-500 text-white rounded-full p-2">
                          <Check className="h-5 w-5" />
                        </div>
                      )}
@@ -499,8 +499,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                         <h3 className="text-xl font-bold text-slate-900">{iceType.name}</h3>
                         <div className={`w-6 h-6 rounded-full border-2 transition-all ${
                             isSelected 
-                              ? 'bg-green-500 border-green-500' 
-                              : 'border-slate-300 hover:border-green-500'
+                              ? 'bg-blue-500 border-blue-500' 
+                              : 'border-slate-300 hover:border-blue-500'
                           }`}
                         >
                           {isSelected && <div className="w-full h-full rounded-full bg-white scale-50"></div>}
@@ -541,7 +541,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                                     e.stopPropagation();
                                     handleQuantityChange(iceType.id, size, selectedItem.quantities[size] + 1);
                                   }}
-                                  className="w-8 h-8 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-colors"
+                                  className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors"
                                 >
                                   +
                                 </button>
@@ -590,7 +590,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
               <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
                 <button
                   onClick={() => handleStepChange(2)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-3"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-3"
                 >
                   <span className="text-center">
                     <span className="block sm:hidden">Continuer</span>
@@ -618,15 +618,15 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Standard Delivery */}
               <div className={`bg-white rounded-xl shadow-lg p-6 border-2 transition-all cursor-pointer ${
-                !isExpressDelivery ? 'border-green-500 shadow-xl' : 'border-slate-200 hover:border-green-300'
+                !isExpressDelivery ? 'border-blue-500 shadow-xl' : 'border-slate-200 hover:border-blue-300'
               }`} onClick={() => setIsExpressDelivery(false)}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <Truck className="h-6 w-6 text-green-600" />
+                    <Truck className="h-6 w-6 text-blue-600" />
                     <h3 className="text-xl font-bold text-slate-900">Livraison Standard</h3>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    !isExpressDelivery ? 'bg-green-500 border-green-500' : 'border-slate-300'
+                    !isExpressDelivery ? 'bg-blue-500 border-blue-500' : 'border-slate-300'
                   }`}>
                     {!isExpressDelivery && <div className="w-full h-full rounded-full bg-white scale-50"></div>}
                   </div>
@@ -670,7 +670,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                       value={deliveryInfo.date}
                       onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -678,7 +678,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     <select
                       value={deliveryInfo.time}
                       onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Sélectionnez une heure</option>
                       <option value="08:00-10:00">08:00 - 10:00</option>
@@ -700,7 +700,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <button
                   id="location-btn"
                   onClick={getCurrentLocation}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
                 >
                   <Navigation className="h-4 w-4" />
                   <span>Ma position</span>
@@ -714,7 +714,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                   type="text"
                   value={deliveryInfo.address}
                   onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Entrez votre adresse complète (rue, quartier, ville)"
                 />
                 
@@ -762,7 +762,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 disabled={!deliveryInfo.address || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
                 className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
                   (deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
               >
@@ -788,7 +788,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     type="text"
                     value={customerInfo.name}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Votre nom complet"
                   />
                 </div>
@@ -798,7 +798,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     type="tel"
                     value={customerInfo.phone}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="+212 6XX XXX XXX"
                   />
                 </div>
@@ -808,7 +808,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     type="email"
                     value={customerInfo.email}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="votre@email.com"
                   />
                 </div>
@@ -819,7 +819,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                   value={customerInfo.notes}
                   onChange={(e) => setCustomerInfo(prev => ({ ...prev, notes: e.target.value }))}
                   rows={4}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   placeholder="Instructions spéciales, accès, étage, etc."
                 />
               </div>
@@ -855,7 +855,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                   <h4 className="font-semibold text-slate-900 mb-2">Livraison:</h4>
                   <div className="bg-slate-50 rounded-lg p-3">
                     <div className="flex items-center space-x-2 mb-2">
-                      {isExpressDelivery ? <Rocket className="h-4 w-4 text-orange-600" /> : <Truck className="h-4 w-4 text-green-600" />}
+                      {isExpressDelivery ? <Rocket className="h-4 w-4 text-orange-600" /> : <Truck className="h-4 w-4 text-blue-600" />}
                       <span className="font-medium">
                         {isExpressDelivery ? 'Livraison Express (moins de 1H)' : 'Livraison Standard'}
                       </span>
@@ -877,7 +877,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-2xl font-bold">
                     <span>Total:</span>
-                    <span className="text-green-600">{calculateTotal()} MAD</span>
+                    <span className="text-blue-600">{calculateTotal()} MAD</span>
                   </div>
                 </div>
               </div>
@@ -895,7 +895,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 disabled={!customerInfo.name || !customerInfo.phone || !customerInfo.email}
                 className={`w-full sm:w-auto px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center space-x-3 ${
                   customerInfo.name && customerInfo.phone && customerInfo.email
-                    ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
               >
