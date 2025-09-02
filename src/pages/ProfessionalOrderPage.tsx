@@ -25,7 +25,7 @@ interface OrderItem {
   };
 }
 
-function ProfessionalOrderPage({ onBack }: IndividualOrderPageProps) {
+function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
@@ -354,9 +354,10 @@ function ProfessionalOrderPage({ onBack }: IndividualOrderPageProps) {
     try {
       const orderData = {
         customerEmail: customerInfo.email,
-        customerName: customerInfo.name,
+        customerName: customerInfo.companyName,
         orderDetails: {
           orderNumber: `CMD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+          companyName: customerInfo.companyName,
           items: selectedItems.map(item => ({
             iceType: item.iceType.name,
             quantities: item.quantities,
