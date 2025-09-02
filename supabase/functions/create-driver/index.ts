@@ -25,8 +25,11 @@ Deno.serve(async (req) => {
   try {
     const { name, phone, email, password, is_active, current_status, adminSecret }: CreateDriverRequest = await req.json()
 
+    console.log('🔧 Données reçues:', { name, phone, email, is_active, current_status, hasAdminSecret: !!adminSecret })
+
     // Verify admin secret
     if (adminSecret !== 'TheIceGuys2025.') {
+      console.log('❌ Secret admin incorrect')
       return new Response(
         JSON.stringify({ success: false, error: 'Accès non autorisé' }),
         {
@@ -40,8 +43,15 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
+    console.log('🔧 Variables d\'environnement:', { 
+      hasUrl: !!supabaseUrl, 
+      hasServiceKey: !!supabaseServiceKey,
+      urlLength: supabaseUrl?.length,
+      keyLength: supabaseServiceKey?.length
+    })
+    
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing environment variables:', { supabaseUrl: !!supabaseUrl, supabaseServiceKey: !!supabaseServiceKey })
+      console.error('❌ Variables d\'environnement manquantes:', { supabaseUrl: !!supabaseUrl, supabaseServiceKey: !!supabaseServiceKey })
       return new Response(
         JSON.stringify({ success: false, error: 'Configuration serveur manquante' }),
         {
@@ -59,7 +69,7 @@ Deno.serve(async (req) => {
     })
 
     // 1. Create user in Supabase Auth
-    console.log('Creating user in Supabase Auth...')
+    console.log('👤 Création utilisateur Auth...')
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: password,
@@ -72,20 +82,20 @@ Deno.serve(async (req) => {
     })
 
     if (authError) {
-      console.error('Error creating auth user:', authError)
+      console.error('❌ Erreur création Auth:', authError)
       return new Response(
         JSON.stringify({ success: false, error: `Erreur création utilisateur: ${authError.message}` }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
+          status: 400,
         },
       )
     }
 
-    console.log('Auth user created:', authUser.user?.id)
+    console.log('✅ Utilisateur Auth créé:', authUser.user?.id)
 
     // 2. Insert new driver in delivery_drivers table
-    console.log('Creating driver record...')
+    console.log('🚚 Création enregistrement livreur...')
     const { data, error } = await supabase
       .from('delivery_drivers')
       .insert([{
@@ -100,21 +110,22 @@ Deno.serve(async (req) => {
       .single()
 
     if (error) {
-      console.error('Error creating driver:', error)
+      console.error('❌ Erreur création livreur:', error)
       
       // If driver creation fails, delete the auth user to maintain consistency
+      console.log('🧹 Suppression utilisateur Auth suite à l\'erreur...')
       await supabase.auth.admin.deleteUser(authUser.user!.id)
       
       return new Response(
         JSON.stringify({ success: false, error: `Erreur création livreur: ${error.message}` }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
+          status: 400,
         },
       )
     }
 
-    console.log('Driver created successfully:', data.id)
+    console.log('✅ Livreur créé avec succès:', data.id)
 
     return new Response(
       JSON.stringify({ 
@@ -131,9 +142,9 @@ Deno.serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error in create-driver function:', error)
+    console.error('❌ Erreur générale dans create-driver:', error)
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: `Erreur serveur: ${error.message}` }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
