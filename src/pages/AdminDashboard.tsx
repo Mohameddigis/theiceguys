@@ -128,153 +128,21 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             address: order.delivery_address
           },
           total: order.total,
-      await saveDriver(driverData);
+        }
+      };
+      // await saveDriver(driverData);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email:', error);
+    }
+  };
+
+  const getIceTypeName = (iceType: string) => {
+    switch (iceType) {
       case 'nuggets': return "Nugget's";
       case 'gourmet': return 'Gourmet';
       case 'cubique': return 'Glace Paillette';
       default: return iceType;
     }
-  };
-
-  const saveDriver = async (driverData: any) => {
-    try {
-      setSavingDriver(true);
-      
-      if (editingDriver) {
-        // Modification d'un livreur existant
-        const { error } = await supabase
-          .from('delivery_drivers')
-          .update({
-            name: driverData.name,
-            phone: driverData.phone,
-            email: driverData.email,
-            is_active: driverData.is_active,
-            current_status: driverData.current_status
-          })
-          .eq('id', editingDriver.id);
-
-        if (error) throw error;
-        
-        console.log('✅ Livreur modifié avec succès');
-      } else {
-        // Création d'un nouveau livreur
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-driver`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...driverData,
-            adminSecret: 'TheIceGuys2025.'
-          })
-        });
-
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || 'Erreur lors de la création du livreur');
-        }
-        
-        console.log('✅ Livreur créé avec succès:', result.data);
-      }
-      
-      await loadDrivers();
-      resetDriverForm();
-      
-    } catch (error) {
-      console.error('❌ Erreur sauvegarde livreur:', error);
-      alert(`Erreur lors de la sauvegarde du livreur: ${error.message}`);
-    } finally {
-      setSavingDriver(false);
-    }
-  };
-
-  const deleteDriver = async (driverId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce livreur ? Cette action est irréversible.')) {
-      return;
-    }
-
-    try {
-      // Vérifier s'il y a des commandes assignées
-      const { data: assignedOrders } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('assigned_driver_id', driverId)
-        .in('status', ['confirmed', 'delivering']);
-
-      if (assignedOrders && assignedOrders.length > 0) {
-        alert('Impossible de supprimer ce livreur car il a des commandes en cours. Veuillez d\'abord réassigner ses commandes.');
-        return;
-      }
-
-      // Supprimer le livreur
-      const { error } = await supabase
-        .from('delivery_drivers')
-        .delete()
-        .eq('id', driverId);
-
-      if (error) throw error;
-
-      console.log('✅ Livreur supprimé avec succès');
-      await loadDrivers();
-      
-      // Fermer la vue détaillée si c'était le livreur sélectionné
-      if (selectedDriver && selectedDriver.id === driverId) {
-        setSelectedDriver(null);
-      }
-      
-    } catch (error) {
-      console.error('❌ Erreur suppression livreur:', error);
-      alert(`Erreur lors de la suppression du livreur: ${error.message}`);
-    }
-  };
-
-  const openDriverForm = (driver?: DeliveryDriver) => {
-    if (driver) {
-      setEditingDriver(driver);
-      setDriverFormData({
-        name: driver.name,
-        phone: driver.phone,
-        email: driver.email,
-        password: '', // Ne pas pré-remplir le mot de passe
-        is_active: driver.is_active,
-        current_status: driver.current_status
-      });
-    } else {
-      resetDriverForm();
-    }
-    setShowDriverForm(true);
-  };
-
-  const resetDriverForm = () => {
-    setEditingDriver(null);
-    setDriverFormData({
-      name: '',
-      phone: '',
-      email: '',
-      password: '',
-      is_active: true,
-      current_status: 'offline'
-    });
-    setShowDriverForm(false);
-  };
-
-  const handleDriverFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validation
-    if (!driverFormData.name || !driverFormData.phone || !driverFormData.email) {
-      alert('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    if (!editingDriver && !driverFormData.password) {
-      alert('Le mot de passe est obligatoire pour un nouveau livreur');
-      return;
-    }
-
-    saveDriver(driverFormData);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
@@ -880,145 +748,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             )}
           </div>
         </div>
-
-        {/* Driver Form Modal */}
-        {showDriverForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-slate-900">
-                    {editingDriver ? 'Modifier le livreur' : 'Nouveau livreur'}
-                  </h3>
-                  <button
-                    onClick={resetDriverForm}
-                    className="text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleDriverFormSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nom complet *
-                    </label>
-                    <input
-                      type="text"
-                      value={driverFormData.name}
-                      onChange={(e) => setDriverFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Nom du livreur"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Téléphone *
-                    </label>
-                    <input
-                      type="tel"
-                      value={driverFormData.phone}
-                      onChange={(e) => setDriverFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="+212 6XX XXX XXX"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={driverFormData.email}
-                      onChange={(e) => setDriverFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="email@example.com"
-                      required
-                      disabled={!!editingDriver} // Email non modifiable en édition
-                    />
-                  </div>
-
-                  {!editingDriver && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Mot de passe *
-                      </label>
-                      <input
-                        type="password"
-                        value={driverFormData.password}
-                        onChange={(e) => setDriverFormData(prev => ({ ...prev, password: e.target.value }))}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Mot de passe sécurisé"
-                        required
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Statut
-                    </label>
-                    <select
-                      value={driverFormData.current_status}
-                      onChange={(e) => setDriverFormData(prev => ({ ...prev, current_status: e.target.value as any }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="offline">Hors ligne</option>
-                      <option value="available">Disponible</option>
-                      <option value="busy">Occupé</option>
-                      <option value="on_break">En pause</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="is_active"
-                      checked={driverFormData.is_active}
-                      onChange={(e) => setDriverFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                      className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="is_active" className="text-sm font-medium text-slate-700">
-                      Livreur actif
-                    </label>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={resetDriverForm}
-                      className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={savingDriver}
-                      className={`flex-1 px-4 py-3 rounded-lg font-semibold text-white transition-all ${
-                        savingDriver
-                          ? 'bg-slate-400 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      }`}
-                    >
-                      {savingDriver ? (
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>Sauvegarde...</span>
-                        </div>
-                      ) : (
-                        editingDriver ? 'Modifier' : 'Créer'
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
       )}
     </div>
   );
@@ -1113,25 +842,15 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               </select>
             </div>
             <div className="flex items-end">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <button
                 onClick={() => {
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => openDriverForm()}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Nouveau Livreur</span>
-                </button>
-                <button
-                  onClick={loadDrivers}
-                  disabled={loadingDrivers}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw className={`h-4 w-4 ${loadingDrivers ? 'animate-spin' : ''}`} />
-                  <span>Actualiser</span>
-                </button>
-              </div>
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                }}
+                className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors"
+              >
+                Réinitialiser
+              </button>
             </div>
           </div>
         </div>
