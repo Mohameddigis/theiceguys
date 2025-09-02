@@ -174,8 +174,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
-  };
-
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       setUpdatingStatus(orderId);
@@ -1038,6 +1036,15 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       </div>
     </div>
   );
+
+  const getIceTypeName = (iceType: string): string => {
+    switch (iceType) {
+      case 'nuggets': return "Nugget's";
+      case 'gourmet': return 'Gourmet';
+      case 'cubique': return 'Glace Paillette';
+      default: return iceType;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
