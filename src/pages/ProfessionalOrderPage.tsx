@@ -233,7 +233,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   };
 
   const generateWhatsAppMessage = () => {
-    let message = `🏠 *COMMANDE PARTICULIER - THE ICE GUYS*\n\n`;
+    let message = `🏢 *COMMANDE PROFESSIONNEL - THE ICE GUYS*\n\n`;
     
     message += `📋 *DÉTAILS DE LA COMMANDE:*\n`;
     selectedItems.forEach(item => {
@@ -354,10 +354,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     try {
       const orderData = {
         customerEmail: customerInfo.email,
-        customerName: customerInfo.companyName,
+        customerName: customerInfo.name,
         orderDetails: {
           orderNumber: `CMD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-          companyName: customerInfo.companyName,
           items: selectedItems.map(item => ({
             iceType: item.iceType.name,
             quantities: item.quantities,
