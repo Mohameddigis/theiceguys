@@ -255,8 +255,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     message += `   • Adresse: ${deliveryInfo.address}\n`;
 
     message += `\n👤 *INFORMATIONS CLIENT:*\n`;
-    message += `   • Nom de l'entreprise: ${customerInfo.companyName}\n`;
-    message += `   • Nom du contact: ${customerInfo.contactName}\n`;
+    message += `   • Nom: ${customerInfo.name}\n`;
     message += `   • Téléphone: ${customerInfo.phone}\n`;
     message += `   • Email: ${customerInfo.email}\n`;
     if (customerInfo.notes) message += `   • Notes: ${customerInfo.notes}\n`;
@@ -776,14 +775,24 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom complet *</label>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom de l'entreprise *</label>
                   <input
                     type="text"
-                    value={customerInfo.name}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                    value={customerInfo.companyName}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, companyName: e.target.value }))}
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="Votre nom complet"
+                    placeholder="Nom de votre entreprise"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom du contact *</label>
+                  <input
+                    type="text"
+                    value={customerInfo.contactName}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, contactName: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Nom de la personne de contact"
                   />
                 </div>
                 <div>
