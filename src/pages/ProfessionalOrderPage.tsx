@@ -354,7 +354,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     try {
       const orderData = {
         customerEmail: customerInfo.email,
-        customerName: customerInfo.name,
+        customerName: customerInfo.contactName,
         orderDetails: {
           orderNumber: `CMD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
           items: selectedItems.map(item => ({
@@ -371,7 +371,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
             address: deliveryInfo.address
           },
           total: calculateTotal(),
-          customerType: 'individual'
+          customerType: 'professional',
+          companyName: customerInfo.companyName
         }
       };
 
