@@ -233,7 +233,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   };
 
   const generateWhatsAppMessage = () => {
-    let message = `🏢 *COMMANDE PROFESSIONNEL - THE ICE GUYS*\n\n`;
+    let message = `🏠 *COMMANDE PARTICULIER - THE ICE GUYS*\n\n`;
     
     message += `📋 *DÉTAILS DE LA COMMANDE:*\n`;
     selectedItems.forEach(item => {
@@ -255,7 +255,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     message += `   • Adresse: ${deliveryInfo.address}\n`;
 
     message += `\n👤 *INFORMATIONS CLIENT:*\n`;
-    message += `   • Nom: ${customerInfo.name}\n`;
+    message += `   • Nom de l'entreprise: ${customerInfo.companyName}\n`;
+    message += `   • Nom du contact: ${customerInfo.contactName}\n`;
     message += `   • Téléphone: ${customerInfo.phone}\n`;
     message += `   • Email: ${customerInfo.email}\n`;
     if (customerInfo.notes) message += `   • Notes: ${customerInfo.notes}\n`;
