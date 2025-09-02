@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Truck, Mail, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Truck, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface DriverLoginProps {
@@ -15,13 +15,6 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Livreurs de test (en production, cela viendrait de la base de données)
-  const TEST_DRIVERS = [
-    { id: '1', email: 'ahmed.livreur@theiceguys.com', password: 'Ahmed2025', name: 'Ahmed Benali' },
-    { id: '2', email: 'youssef.livreur@theiceguys.com', password: 'Youssef2025', name: 'Youssef Alami' },
-    { id: '3', email: 'omar.livreur@theiceguys.com', password: 'Omar2025', name: 'Omar Tazi' }
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +48,14 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
         return;
       }
 
+      // Vérifier si le livreur est actif
+      if (!driverData.is_active) {
+        setError('Votre compte livreur est désactivé. Contactez l\'administration.');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
       // Store driver session
       localStorage.setItem('driver_authenticated', 'true');
       localStorage.setItem('driver_id', driverData.id);
@@ -70,7 +71,7 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
       onLogin(driverData.id, driverData.name);
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      setError('Erreur de connexion');
+      setError('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -95,6 +96,19 @@ function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Espace Livreur</h1>
             <p className="text-slate-600">The Ice Guys - Connexion livreur</p>
+          </div>
+
+          {/* Info box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-sm text-blue-800 font-medium">Accès livreur</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Utilisez les identifiants fournis par l'administration pour accéder à vos livraisons.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Form */}
