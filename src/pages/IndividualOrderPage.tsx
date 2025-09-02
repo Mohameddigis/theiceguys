@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check } from 'lucide-react';
+import { ArrowLeft, Users, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check, Navigation } from 'lucide-react';
 import { orderService } from '../lib/supabase';
 
 interface IndividualOrderPageProps {
@@ -30,7 +30,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState({
-    address: ''
+    date: '',
+    time: '',
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -139,6 +140,96 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     if (!isExpressDelivery) {
       setDeliveryInfo(prev => ({ ...prev, date: '', time: '' }));
     }
+  };
+
+  const getCurrentLocation = () => {
+    const button = document.getElementById('location-btn');
+    if (button) {
+      button.textContent = 'Localisation...';
+      button.disabled = true;
+    }
+
+    if (!navigator.geolocation) {
+      alert('La géolocalisation n\'est pas supportée par ce navigateur.');
+      if (button) {
+        button.textContent = 'Ma position';
+        button.disabled = false;
+      }
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          // Try to get address from coordinates using reverse geocoding
+          const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoidGhlaWNlZ3V5cyIsImEiOiJjbTRkZGNqZGcwMGNzMmtzZGNqZGNqZGNqIn0.example&country=ma&proximity=${longitude},${latitude}&types=address,poi`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+              const address = data.features[0].place_name;
+              setDeliveryInfo(prev => ({
+                ...prev,
+                address: address,
+                coordinates: [longitude, latitude]
+              }));
+            } else {
+              throw new Error('No address found');
+            }
+          } else {
+            throw new Error('Geocoding failed');
+          }
+        } catch (error) {
+          console.error('Erreur de géocodage:', error);
+          // Fallback: use coordinates as address
+          const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
+          setDeliveryInfo(prev => ({
+            ...prev,
+            address: fallbackAddress,
+            coordinates: [longitude, latitude]
+          }));
+        }
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        let errorMessage = 'Impossible d\'obtenir votre position.';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Accès à la localisation refusé. Veuillez autoriser la géolocalisation.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Position non disponible.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Délai d\'attente dépassé pour la géolocalisation.';
+            break;
+        }
+        
+        alert(errorMessage);
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
   };
 
   const generateWhatsAppMessage = () => {
@@ -273,7 +364,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                        (item.quantities['10kg'] * item.iceType.price10kg) +
                        (item.quantities['20kg'] * item.iceType.price20kg)
           })),
-            delivery_coordinates: null,
+          delivery: {
             type: isExpressDelivery ? 'express' : 'standard',
             date: deliveryInfo.date,
             time: deliveryInfo.time,
@@ -336,11 +427,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
           <div className="flex items-center justify-between relative">
             <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-200"></div>
             <div 
-              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-gre
-      }
-    }
-  }
-}en-500 to-emerald-600 transition-all duration-500"
+              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
               style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
             ></div>
             
@@ -611,52 +698,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                     value={deliveryInfo.address}
                     onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-          const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
-          setDeliveryInfo(prev => ({
-            ...prev,
-            address: fallbackAddress,
-            coordinates: [longitude, latitude]
-          }));
-        }
-        
-        // Reset button state
-        if (button) {
-          button.textContent = 'Ma position';
-          button.disabled = false;
-        }
-      },
-      (error) => {
-        console.error('Erreur de géolocalisation:', error);
-        let errorMessage = 'Impossible d\'obtenir votre position.';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Accès à la localisation refusé. Veuillez autoriser la géolocalisation.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Position non disponible.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Délai d\'attente dépassé pour la géolocalisation.';
-            break;
-        }
-        
-        alert(errorMessage);
-        
-        // Reset button state
-        if (button) {
-          button.textContent = 'Ma position';
-          button.disabled = false;
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minutes
-      }
-    );
-  };
-
+                    placeholder="Entrez votre adresse complète"
+                  />
                 </div>
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -780,6 +823,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                           <span className="font-medium">{item.iceType.name}</span>
                           <div className="text-sm text-slate-600">
                             {item.quantities['5kg'] > 0 && `${item.quantities['5kg']}x 5kg (${item.quantities['5kg'] * item.iceType.price5kg} MAD) `}
+                            {item.quantities['20kg'] > 0 && `${item.quantities['20kg']}x 20kg (${item.quantities['20kg'] * item.iceType.price20kg} MAD) `}
                           </div>
                         </div>
                         <div className="font-semibold">
