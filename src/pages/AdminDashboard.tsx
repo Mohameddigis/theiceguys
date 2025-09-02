@@ -20,6 +20,9 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [drivers, setDrivers] = useState<DeliveryDriver[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<DeliveryDriver | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [updatingOrderStatus, setUpdatingOrderStatus] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
@@ -78,6 +81,96 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
       alert('Erreur lors de la génération du bon de commande');
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+    try {
+      setUpdatingOrderStatus(orderId);
+      
+      // Mettre à jour le statut dans la base de données
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Recharger les commandes
+      await loadOrders();
+      
+      // Mettre à jour la commande sélectionnée si c'est celle-ci
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+
+      // Envoyer notification email au client
+      const order = orders.find(o => o.id === orderId);
+      if (order && order.customer) {
+        await sendStatusNotificationEmail(order, newStatus);
+      }
+
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut:', error);
+      alert('Erreur lors de la mise à jour du statut');
+    } finally {
+      setUpdatingOrderStatus(null);
+    }
+  };
+
+  const sendStatusNotificationEmail = async (order: Order, newStatus: Order['status']) => {
+    try {
+      const orderData = {
+        customerEmail: order.customer!.email,
+        customerName: order.customer!.name,
+        orderNumber: order.order_number,
+        newStatus: newStatus,
+        orderDetails: {
+          items: order.order_items?.map(item => ({
+            iceType: getIceTypeName(item.ice_type),
+            quantities: {
+              '5kg': item.package_size === '5kg' ? item.quantity : 0,
+              '10kg': 0, // Pas utilisé actuellement
+              '20kg': item.package_size === '20kg' ? item.quantity : 0
+            },
+            totalPrice: item.total_price
+          })) || [],
+          deliveryInfo: {
+            type: order.delivery_type,
+            date: order.delivery_date,
+            time: order.delivery_time,
+            address: order.delivery_address
+          },
+          total: order.total,
+          customerType: order.customer!.type
+        }
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-status-notification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (response.ok) {
+        console.log('✅ Email de notification envoyé avec succès');
+      } else {
+        console.error('❌ Erreur lors de l\'envoi de l\'email de notification');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
+    }
+  };
+
+  const getIceTypeName = (iceType: string): string => {
+    switch (iceType) {
+      case 'nuggets': return "Nugget's";
+      case 'gourmet': return 'Gourmet';
+      case 'cubique': return 'Glace Paillette';
+      default: return iceType;
     }
   };
 
@@ -378,24 +471,24 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </div>
 
             {/* Actions de statut */}
-            <div className="mb-8 p-6 bg-slate-50 rounded-xl">
-              <h3 className="font-semibold text-slate-900 mb-4">Modifier le statut de la commande :</h3>
+            <div className="mb-8 p-6 bg-blue-50 rounded-xl">
+              <h3 className="font-semibold text-slate-900 mb-4">Changer le statut de la commande :</h3>
               <div className="flex flex-wrap gap-3">
                 {(['confirmed', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
                   <button
                     key={status}
                     onClick={() => updateOrderStatus(selectedOrder.id, status)}
-                    disabled={selectedOrder.status === status || updatingStatus === selectedOrder.id}
+                    disabled={selectedOrder.status === status || updatingOrderStatus === selectedOrder.id}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
                       selectedOrder.status === status
                         ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : updatingStatus === selectedOrder.id
+                        : updatingOrderStatus === selectedOrder.id
                         ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : 'bg-white border-2 border-slate-300 hover:border-brand-primary hover:bg-brand-50 text-slate-700 hover:text-brand-primary'
+                        : 'bg-white border border-blue-300 hover:bg-blue-100 text-blue-700'
                     }`}
                   >
-                    {updatingStatus === selectedOrder.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-primary"></div>
+                    {updatingOrderStatus === selectedOrder.id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                     ) : (
                       getStatusIcon(status)
                     )}
@@ -403,6 +496,9 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   </button>
                 ))}
               </div>
+              <p className="text-sm text-slate-600 mt-3">
+                💡 Le client recevra automatiquement un email de notification lors du changement de statut
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
