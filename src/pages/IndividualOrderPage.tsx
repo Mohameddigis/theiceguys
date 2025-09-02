@@ -382,6 +382,12 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
             time: deliveryInfo.time,
             address: deliveryInfo.address
           },
+          deliveryInfo: {
+            type: isExpressDelivery ? 'express' : 'standard',
+            date: deliveryInfo.date,
+            time: deliveryInfo.time,
+            address: deliveryInfo.address
+          },
           total: calculateTotal(),
           customerType: 'individual'
         }
