@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation } from 'lucide-react';
-import { Order, driverService } from '../lib/supabase';
+import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation, User, Calendar, AlertCircle } from 'lucide-react';
+import { Order, driverService, supabase } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 
 interface DriverDashboardProps {
@@ -14,6 +14,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [driverStatus, setDriverStatus] = useState<'offline' | 'available' | 'busy' | 'on_break'>('available');
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -26,6 +27,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   useEffect(() => {
     loadOrders();
+    loadDriverStatus();
     // Actualiser toutes les 30 secondes
     const interval = setInterval(loadOrders, 30000);
     return () => clearInterval(interval);
@@ -43,6 +45,37 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     }
   };
 
+  const loadDriverStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('delivery_drivers')
+        .select('current_status')
+        .eq('id', driverId)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setDriverStatus(data.current_status);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du statut:', error);
+    }
+  };
+
+  const updateDriverStatus = async (newStatus: typeof driverStatus) => {
+    try {
+      const { error } = await supabase
+        .from('delivery_drivers')
+        .update({ current_status: newStatus })
+        .eq('id', driverId);
+
+      if (error) throw error;
+      setDriverStatus(newStatus);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut:', error);
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       setUpdatingStatus(orderId);
@@ -57,8 +90,14 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
       
       // Recharger les commandes
       await loadOrders();
+      
+      // Mettre à jour la commande sélectionnée si c'est celle-ci
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
+      alert('Erreur lors de la mise à jour du statut');
     } finally {
       setUpdatingStatus(null);
     }
@@ -96,6 +135,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'delivering': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
@@ -106,6 +146,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
+      case 'pending': return <Clock className="h-4 w-4" />;
       case 'confirmed': return <CheckCircle className="h-4 w-4" />;
       case 'delivering': return <Truck className="h-4 w-4" />;
       case 'delivered': return <CheckCircle className="h-4 w-4" />;
@@ -116,6 +157,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const getStatusLabel = (status: Order['status']) => {
     switch (status) {
+      case 'pending': return 'En attente';
       case 'confirmed': return 'Confirmée';
       case 'delivering': return 'En livraison';
       case 'delivered': return 'Livrée';
@@ -124,203 +166,301 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     }
   };
 
-  const canUpdateStatus = (currentStatus: Order['status'], newStatus: Order['status']) => {
-    const allowedStatuses = ['delivering', 'delivered', 'cancelled'];
-    return allowedStatuses.includes(newStatus);
+  const getDriverStatusColor = (status: typeof driverStatus) => {
+    switch (status) {
+      case 'available': return 'bg-green-100 text-green-800 border-green-200';
+      case 'busy': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'on_break': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'offline': return 'bg-gray-100 text-gray-800 border-gray-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
-  // Séparer les commandes express et standard
+  const getDriverStatusLabel = (status: typeof driverStatus) => {
+    switch (status) {
+      case 'available': return 'Disponible';
+      case 'busy': return 'Occupé';
+      case 'on_break': return 'En pause';
+      case 'offline': return 'Hors ligne';
+      default: return status;
+    }
+  };
+
+  const getIceTypeName = (iceType: string): string => {
+    switch (iceType) {
+      case 'nuggets': return "Nugget's";
+      case 'gourmet': return 'Gourmet';
+      case 'cubique': return 'Glace Paillette';
+      default: return iceType;
+    }
+  };
+
+  // Séparer les commandes par priorité
   const expressOrders = orders.filter(order => order.delivery_type === 'express');
   const standardOrders = orders.filter(order => order.delivery_type === 'standard');
   const sortedOrders = [...expressOrders, ...standardOrders];
 
+  // Statistiques
+  const stats = {
+    total: orders.length,
+    express: expressOrders.length,
+    delivering: orders.filter(o => o.status === 'delivering').length,
+    confirmed: orders.filter(o => o.status === 'confirmed').length
+  };
+
   if (selectedOrder) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <button
-            onClick={() => {
-              setSelectedOrder(null);
-              setTimeout(scrollToTop, 100);
-            }}
-            className="flex items-center space-x-2 text-green-600 hover:text-green-700 transition-colors mb-6"
-          >
-            <Truck className="h-5 w-5 rotate-180" />
-            <span>Retour à mes livraisons</span>
-          </button>
+        {/* Header fixe */}
+        <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  setSelectedOrder(null);
+                  setTimeout(scrollToTop, 100);
+                }}
+                className="flex items-center space-x-2 text-green-600 hover:text-green-700 transition-colors"
+              >
+                <Truck className="h-5 w-5 rotate-180" />
+                <span>Retour à mes livraisons</span>
+              </button>
+              
+              <div className="flex items-center space-x-3">
+                <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                  {getStatusIcon(selectedOrder.status)}
+                  <span className="ml-1">{getStatusLabel(selectedOrder.status)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">Commande {selectedOrder.order_number}</h1>
-                <p className="text-slate-600">
-                  {selectedOrder.delivery_type === 'express' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 mr-2">
-                      ⚡ EXPRESS
-                    </span>
-                  )}
-                  Créée le {new Date(selectedOrder.created_at).toLocaleDateString('fr-FR')}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* En-tête de commande */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold">Commande {selectedOrder.order_number}</h1>
+                  <p className="text-green-100">
+                    {selectedOrder.delivery_type === 'express' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500 text-white mr-2">
+                        ⚡ EXPRESS
+                      </span>
+                    )}
+                    Créée le {new Date(selectedOrder.created_at).toLocaleDateString('fr-FR')} à {new Date(selectedOrder.created_at).toLocaleTimeString('fr-FR')}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{selectedOrder.total} MAD</div>
+                  <div className="text-green-100 text-sm">Total à encaisser</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Actions de statut pour livreur */}
+              <div className="mb-8 p-4 bg-green-50 rounded-lg">
+                <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                  <Truck className="h-5 w-5 mr-2 text-green-600" />
+                  Actions livreur :
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {(['delivering', 'delivered', 'cancelled'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => updateOrderStatus(selectedOrder.id, status)}
+                      disabled={selectedOrder.status === status || updatingStatus === selectedOrder.id}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                        selectedOrder.status === status
+                          ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                          : updatingStatus === selectedOrder.id
+                          ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                          : 'bg-white border border-green-300 hover:bg-green-100 text-green-700'
+                      }`}
+                    >
+                      {updatingStatus === selectedOrder.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                      ) : (
+                        getStatusIcon(status)
+                      )}
+                      <span>{getStatusLabel(status)}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-sm text-slate-600 mt-2">
+                  💡 Mettez à jour le statut selon l'avancement de votre livraison
                 </p>
               </div>
-              <div className={`px-4 py-2 rounded-full border flex items-center space-x-2 ${getStatusColor(selectedOrder.status)}`}>
-                {getStatusIcon(selectedOrder.status)}
-                <span className="font-medium">{getStatusLabel(selectedOrder.status)}</span>
-              </div>
-            </div>
 
-            {/* Actions de statut pour livreur */}
-            <div className="mb-8 p-4 bg-green-50 rounded-lg">
-              <h3 className="font-semibold text-slate-900 mb-3">Actions livreur :</h3>
-              <div className="flex flex-wrap gap-2">
-                {(['delivering', 'delivered', 'cancelled'] as const).map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => updateOrderStatus(selectedOrder.id, status)}
-                    disabled={selectedOrder.status === status || updatingStatus === selectedOrder.id}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
-                      selectedOrder.status === status
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : updatingStatus === selectedOrder.id
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : 'bg-white border border-green-300 hover:bg-green-100 text-green-700'
-                    }`}
-                  >
-                    {updatingStatus === selectedOrder.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                    ) : (
-                      getStatusIcon(status)
-                    )}
-                    <span>{getStatusLabel(status)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Informations client */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Informations client</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Package className="h-5 w-5 text-slate-400" />
-                    <div>
-                      <p className="font-medium">{selectedOrder.customer?.name}</p>
-                      {selectedOrder.customer?.contact_name && (
-                        <p className="text-sm text-slate-600">Contact: {selectedOrder.customer.contact_name}</p>
-                      )}
-                      <p className="text-sm text-slate-600">
-                        Type: {selectedOrder.customer?.type === 'professional' ? 'Professionnel' : 'Particulier'}
-                      </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Informations client */}
+                <div className="space-y-6">
+                  <div className="bg-slate-50 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <User className="h-5 w-5 mr-2 text-blue-600" />
+                      Informations client
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="font-medium text-slate-900 text-lg">{selectedOrder.customer?.name}</p>
+                        {selectedOrder.customer?.contact_name && (
+                          <p className="text-sm text-slate-600">Contact: {selectedOrder.customer.contact_name}</p>
+                        )}
+                        <p className="text-sm text-slate-600">
+                          Type: {selectedOrder.customer?.type === 'professional' ? '🏢 Professionnel' : '👤 Particulier'}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Phone className="h-5 w-5 text-green-600" />
+                        <a 
+                          href={`tel:${selectedOrder.customer?.phone}`} 
+                          className="text-green-600 hover:text-green-700 font-medium text-lg"
+                        >
+                          {selectedOrder.customer?.phone}
+                        </a>
+                      </div>
+                      <div className="pt-3">
+                        <a
+                          href={`tel:${selectedOrder.customer?.phone}`}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
+                        >
+                          <Phone className="h-5 w-5" />
+                          <span>Appeler le client</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-slate-400" />
-                    <a href={`tel:${selectedOrder.customer?.phone}`} className="text-green-600 hover:underline font-medium">
-                      {selectedOrder.customer?.phone}
-                    </a>
+
+                  {/* Articles commandés */}
+                  <div className="bg-slate-50 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Package className="h-5 w-5 mr-2 text-blue-600" />
+                      Articles à livrer
+                    </h3>
+                    <div className="space-y-3">
+                      {selectedOrder.order_items?.map((item, index) => (
+                        <div key={index} className="bg-white rounded-lg p-4 border border-slate-200">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-slate-900 capitalize">{getIceTypeName(item.ice_type)}</p>
+                              <p className="text-sm text-slate-600">{item.quantity}x {item.package_size}</p>
+                              <p className="text-xs text-slate-500">{item.unit_price} MAD/unité</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-green-600 text-lg">{item.total_price} MAD</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Informations de livraison */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Livraison</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Truck className="h-5 w-5 text-slate-400" />
-                    <div>
-                      <p className="font-medium">
-                        {selectedOrder.delivery_type === 'express' ? 'Express (< 1H)' : 'Standard'}
-                      </p>
-                      {selectedOrder.delivery_type === 'express' && (
-                        <p className="text-sm text-orange-600 font-medium">Priorité maximale</p>
+                {/* Informations de livraison */}
+                <div className="space-y-6">
+                  <div className="bg-slate-50 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Truck className="h-5 w-5 mr-2 text-orange-600" />
+                      Informations de livraison
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          selectedOrder.delivery_type === 'express' 
+                            ? 'bg-orange-100 text-orange-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {selectedOrder.delivery_type === 'express' ? '⚡ Express' : '📅 Standard'}
+                        </div>
+                      </div>
+                      
+                      {selectedOrder.delivery_type === 'express' ? (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                          <p className="text-orange-800 font-medium">🚨 Livraison prioritaire</p>
+                          <p className="text-orange-700 text-sm">À livrer en moins d'1 heure</p>
+                        </div>
+                      ) : (
+                        selectedOrder.delivery_date && (
+                          <div className="flex items-center space-x-3">
+                            <Calendar className="h-5 w-5 text-slate-400" />
+                            <div>
+                              <p className="font-medium">{selectedOrder.delivery_date}</p>
+                              <p className="text-sm text-slate-600">{selectedOrder.delivery_time}</p>
+                            </div>
+                          </div>
+                        )
                       )}
+
+                      <div className="bg-white rounded-lg p-4 border border-slate-200">
+                        <div className="flex items-start space-x-3">
+                          <MapPin className="h-5 w-5 text-red-500 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900 mb-2">{selectedOrder.delivery_address}</p>
+                            <div className="flex flex-col space-y-2">
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.delivery_address)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm font-medium"
+                              >
+                                <Navigation className="h-4 w-4" />
+                                <span>Ouvrir dans Google Maps</span>
+                              </a>
+                              <a
+                                href={`https://waze.com/ul?q=${encodeURIComponent(selectedOrder.delivery_address)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm font-medium"
+                              >
+                                <Navigation className="h-4 w-4" />
+                                <span>Ouvrir dans Waze</span>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  {selectedOrder.delivery_date && (
-                    <div className="flex items-center space-x-3">
-                      <Clock className="h-5 w-5 text-slate-400" />
-                      <p>{selectedOrder.delivery_date} à {selectedOrder.delivery_time}</p>
-                    </div>
-                  )}
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="h-5 w-5 text-slate-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">{selectedOrder.delivery_address}</p>
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.delivery_address)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:underline text-sm flex items-center space-x-1 mt-1"
+
+                  {/* Actions rapides */}
+                  <div className="bg-slate-50 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Actions rapides</h3>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => handleDownloadPDF(selectedOrder)}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
-                        <Navigation className="h-3 w-3" />
-                        <span>Ouvrir dans Maps</span>
-                      </a>
+                        <Download className="h-5 w-5" />
+                        <span>Télécharger bon de commande</span>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Articles commandés */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Articles à livrer</h3>
-              <div className="space-y-3">
-                {selectedOrder.order_items?.map((item, index) => (
-                  <div key={index} className="bg-slate-50 rounded-lg p-4 flex justify-between items-center">
-                    <div>
-                      <p className="font-medium capitalize">{item.ice_type}</p>
-                      <p className="text-sm text-slate-600">{item.quantity}x {item.package_size}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{item.total_price} MAD</p>
-                    </div>
+              {/* Notes spéciales */}
+              {selectedOrder.notes && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-slate-900 mb-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2 text-blue-600" />
+                    Notes spéciales du client :
+                  </h4>
+                  <p className="text-slate-700">{selectedOrder.notes}</p>
+                </div>
+              )}
+
+              {/* Résumé total */}
+              <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">Total de la commande</h3>
+                    <p className="text-green-100">Montant à encaisser</p>
                   </div>
-                ))}
+                  <div className="text-3xl font-bold">{selectedOrder.total} MAD</div>
+                </div>
               </div>
-            </div>
-
-            {/* Total */}
-            <div className="mt-8 pt-6 border-t border-slate-200">
-              <div className="flex justify-between items-center text-xl font-bold">
-                <span>Total à encaisser:</span>
-                <span className="text-green-600">{selectedOrder.total} MAD</span>
-              </div>
-            </div>
-
-            {/* Notes */}
-            {selectedOrder.notes && (
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-slate-900 mb-2">Notes spéciales:</h4>
-                <p className="text-slate-700">{selectedOrder.notes}</p>
-              </div>
-            )}
-
-            {/* Actions rapides */}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                onClick={() => handleDownloadPDF(selectedOrder)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                <span>Télécharger bon</span>
-              </button>
-              <a
-                href={`tel:${selectedOrder.customer?.phone}`}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-              >
-                <Phone className="h-4 w-4" />
-                <span>Appeler client</span>
-              </a>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.delivery_address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-              >
-                <Navigation className="h-4 w-4" />
-                <span>Navigation</span>
-              </a>
             </div>
           </div>
         </div>
@@ -330,18 +470,36 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Header fixe */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center space-x-3">
-              <Truck className="h-6 w-6 text-green-600" />
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full w-10 h-10 flex items-center justify-center">
+                <Truck className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Mes Livraisons</h1>
+                <h1 className="text-xl font-bold text-slate-900">Mes Livraisons</h1>
                 <p className="text-slate-600">Bonjour {driverName}</p>
               </div>
             </div>
+            
             <div className="flex items-center space-x-3">
+              {/* Statut du livreur */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-slate-600">Statut:</span>
+                <select
+                  value={driverStatus}
+                  onChange={(e) => updateDriverStatus(e.target.value as typeof driverStatus)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium border ${getDriverStatusColor(driverStatus)}`}
+                >
+                  <option value="available">Disponible</option>
+                  <option value="busy">Occupé</option>
+                  <option value="on_break">En pause</option>
+                  <option value="offline">Hors ligne</option>
+                </select>
+              </div>
+              
               <button
                 onClick={loadOrders}
                 disabled={loading}
@@ -350,6 +508,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Actualiser</span>
               </button>
+              
               <button
                 onClick={onLogout}
                 className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
@@ -364,49 +523,64 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Commandes assignées</p>
-                <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
+                <p className="text-sm text-slate-600">Total</p>
+                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
               </div>
               <Package className="h-8 w-8 text-green-600" />
             </div>
           </div>
+          
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Commandes Express</p>
-                <p className="text-2xl font-bold text-orange-600">{expressOrders.length}</p>
+                <p className="text-sm text-slate-600">Express</p>
+                <p className="text-2xl font-bold text-orange-600">{stats.express}</p>
               </div>
-              <Truck className="h-8 w-8 text-orange-600" />
+              <div className="text-orange-600">⚡</div>
             </div>
           </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Confirmées</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.confirmed}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">En livraison</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {orders.filter(o => o.status === 'delivering').length}
-                </p>
+                <p className="text-2xl font-bold text-orange-600">{stats.delivering}</p>
               </div>
-              <Clock className="h-8 w-8 text-blue-600" />
+              <Truck className="h-8 w-8 text-orange-600" />
             </div>
           </div>
         </div>
 
         {/* Liste des commandes */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Mes commandes ({orders.length})
-            </h2>
-            {expressOrders.length > 0 && (
-              <p className="text-sm text-orange-600 mt-1">
-                ⚡ {expressOrders.length} commande(s) express en priorité
-              </p>
-            )}
+          <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Mes commandes assignées ({orders.length})
+              </h2>
+              {stats.express > 0 && (
+                <div className="flex items-center space-x-2 text-orange-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">
+                    {stats.express} commande(s) express en priorité
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           
           {loading ? (
@@ -417,7 +591,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
           ) : sortedOrders.length === 0 ? (
             <div className="p-8 text-center text-slate-500">
               <Truck className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-              <p>Aucune commande assignée</p>
+              <p className="text-lg font-medium">Aucune commande assignée</p>
+              <p className="text-sm">Les nouvelles commandes apparaîtront ici automatiquement</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-200">
@@ -425,47 +600,61 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                 <div key={order.id} className="p-6 hover:bg-slate-50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-semibold text-slate-900">{order.order_number}</h3>
+                      <div className="flex items-center space-x-3 mb-3">
+                        <h3 className="font-semibold text-slate-900 text-lg">{order.order_number}</h3>
                         {order.delivery_type === 'express' && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                            ⚡ EXPRESS
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                            ⚡ EXPRESS - PRIORITÉ
                           </span>
                         )}
-                        <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs border ${getStatusColor(order.status)}`}>
+                        <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs border font-medium ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}
                           <span>{getStatusLabel(order.status)}</span>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-600">
-                        <div>
-                          <p className="font-medium text-slate-900">{order.customer?.name}</p>
-                          <p>{order.customer?.phone}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="bg-slate-50 rounded-lg p-3">
+                          <p className="font-medium text-slate-900 flex items-center">
+                            <User className="h-4 w-4 mr-1" />
+                            {order.customer?.name}
+                          </p>
+                          {order.customer?.contact_name && (
+                            <p className="text-slate-600">Contact: {order.customer.contact_name}</p>
+                          )}
+                          <p className="text-slate-600 flex items-center mt-1">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {order.customer?.phone}
+                          </p>
                         </div>
-                        <div>
-                          <p className="font-medium text-slate-900">Livraison</p>
+                        
+                        <div className="bg-slate-50 rounded-lg p-3">
+                          <p className="font-medium text-slate-900 flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            Livraison
+                          </p>
                           {order.delivery_date ? (
-                            <p>{order.delivery_date} à {order.delivery_time}</p>
+                            <p className="text-slate-600">{order.delivery_date} à {order.delivery_time}</p>
                           ) : (
-                            <p>Dès que possible</p>
+                            <p className="text-orange-600 font-medium">Dès que possible</p>
                           )}
                         </div>
-                        <div>
+                        
+                        <div className="bg-slate-50 rounded-lg p-3">
                           <p className="font-medium text-slate-900">Total</p>
-                          <p className="text-green-600 font-semibold">{order.total} MAD</p>
+                          <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
                         </div>
                       </div>
                       
-                      <div className="mt-2">
-                        <p className="text-sm text-slate-600 flex items-center space-x-1">
-                          <MapPin className="h-3 w-3" />
+                      <div className="mt-3 bg-blue-50 rounded-lg p-3">
+                        <p className="text-sm text-slate-700 flex items-start space-x-2">
+                          <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
                           <span>{order.delivery_address}</span>
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2 ml-4">
+                    <div className="flex flex-col space-y-2 ml-4">
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
@@ -475,6 +664,36 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                       >
                         Voir détails
                       </button>
+                      
+                      {order.status === 'confirmed' && (
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'delivering')}
+                          disabled={updatingStatus === order.id}
+                          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
+                        >
+                          {updatingStatus === order.id ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : (
+                            <Truck className="h-3 w-3" />
+                          )}
+                          <span>Démarrer</span>
+                        </button>
+                      )}
+                      
+                      {order.status === 'delivering' && (
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'delivered')}
+                          disabled={updatingStatus === order.id}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
+                        >
+                          {updatingStatus === order.id ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : (
+                            <CheckCircle className="h-3 w-3" />
+                          )}
+                          <span>Livré</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -482,6 +701,17 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             </div>
           )}
         </div>
+
+        {/* Message d'encouragement */}
+        {orders.length > 0 && (
+          <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
+            <h3 className="text-xl font-bold mb-2">Excellente journée de livraison ! 🚚</h3>
+            <p className="text-green-100">
+              Vous avez {orders.length} commande(s) à livrer. 
+              {stats.express > 0 && ` Attention aux ${stats.express} commande(s) express !`}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
