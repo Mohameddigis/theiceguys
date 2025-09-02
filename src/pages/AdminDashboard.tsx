@@ -85,6 +85,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     try {
       setUpdatingStatus(orderId);
       await orderService.updateOrderStatus(orderId, newStatus);
+      
+      // Envoyer une notification email au client
+      const order = orders.find(o => o.id === orderId);
+      if (order && order.customer) {
+        await sendStatusNotificationEmail(order, newStatus);
+      }
+      
       await loadData();
       // Si on est dans la vue détaillée, mettre à jour l'ordre sélectionné
       if (selectedOrder && selectedOrder.id === orderId) {
