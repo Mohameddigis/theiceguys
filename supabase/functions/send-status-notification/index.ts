@@ -78,7 +78,7 @@ async function sendEmailWithResend({ from, to, subject, html }: {
   html: string;
 }) {
   // Get Resend API key from environment variables
-  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || 're_f6zTKvXm_JCsqkjYnNpYtC8Cg1dpXdUo8';
   
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY environment variable is not set');
