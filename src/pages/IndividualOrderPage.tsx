@@ -612,11 +612,11 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
             {/* Bouton flottant pour continuer */}
             {canProceedToStep2() && (
-              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+              <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
                 <button
                   onClick={() => handleStepChange(2)}
                   disabled={!canProceedToStep2()}
-                  className={`px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3 ${
+                  className={`w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-lg sm:rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 sm:space-x-3 ${
                     canProceedToStep2()
                       ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
                       : 'bg-slate-300 text-slate-500 cursor-not-allowed'
@@ -626,6 +626,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 </button>
               </div>
             )}
+
+            {/* Espace pour le bouton flottant */}
+            <div className="h-20 sm:h-0"></div>
           </div>
         )}
 
@@ -796,11 +799,11 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
             {/* Bouton flottant pour continuer */}
             {(deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time))) && (
-              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+              <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
                 <button
                   onClick={() => handleStepChange(3)}
                   disabled={!deliveryInfo.address || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
-                  className={`px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3 ${
+                  className={`w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-lg sm:rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 sm:space-x-3 ${
                     (deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
                       ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
                       : 'bg-slate-300 text-slate-500 cursor-not-allowed'
@@ -810,6 +813,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 </button>
               </div>
             )}
+
+            {/* Espace pour le bouton flottant */}
+            <div className="h-20 sm:h-0"></div>
           </div>
         )}
 
@@ -947,11 +953,11 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
             {/* Bouton flottant pour finaliser */}
             {(customerInfo.name && customerInfo.phone && customerInfo.email) && (
-              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+              <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
                 <button
                   onClick={handleWhatsAppOrder}
                   disabled={!customerInfo.name || !customerInfo.phone || !customerInfo.email}
-                  className={`px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3 ${
+                  className={`w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-lg sm:rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 sm:space-x-3 ${
                     customerInfo.name && customerInfo.phone && customerInfo.email
                       ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
                       : 'bg-slate-300 text-slate-500 cursor-not-allowed'
@@ -962,6 +968,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 </button>
               </div>
             )}
+
+            {/* Espace pour le bouton flottant */}
+            <div className="h-20 sm:h-0"></div>
           </div>
         )}
       </div>
