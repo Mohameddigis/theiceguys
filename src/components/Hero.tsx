@@ -100,14 +100,13 @@ function Hero({ onOrderClick }: HeroProps) {
           {/* Main content */}
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="w-[90%] mx-auto text-5xl sm:text-6xl lg:text-8xl font-bold leading-tight drop-shadow-lg">
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-light to-brand-secondary">
-                  THE ICE
-                </span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-light via-brand-secondary to-white">
-                  GUYS
-                </span>
-              </h1>
+              <div className="flex justify-center mb-8">
+                <img 
+                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/icon%20ice%20guys.png"
+                  alt="The Ice Guys"
+                  className="h-32 sm:h-40 lg:h-48 w-auto drop-shadow-2xl animate-pulse hover:animate-bounce transition-all duration-300"
+                />
+              </div>
               <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
                 Votre partenaire de confiance pour des glaçons de qualité supérieure. 
                 Livraison rapide pour professionnels et particuliers.
