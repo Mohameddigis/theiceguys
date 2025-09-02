@@ -23,6 +23,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -82,10 +83,17 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
+      setUpdatingStatus(orderId);
       await orderService.updateOrderStatus(orderId, newStatus);
       await loadData();
+      // Si on est dans la vue détaillée, mettre à jour l'ordre sélectionné
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -156,6 +164,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setSidebarOpen(false);
+    setSelectedOrder(null); // Réinitialiser la sélection lors du changement d'onglet
     setTimeout(scrollToTop, 100);
   };
 
@@ -272,6 +281,229 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   );
 
   const renderOrders = () => (
+    <div className="space-y-6">
+      {selectedOrder ? (
+        // Vue détaillée de la commande
+        <div className="space-y-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <button
+              onClick={() => {
+                setSelectedOrder(null);
+                setTimeout(scrollToTop, 100);
+              }}
+              className="flex items-center space-x-2 text-brand-primary hover:text-brand-secondary transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Retour aux commandes</span>
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Commande {selectedOrder.order_number}</h1>
+                <p className="text-slate-600 mt-2">
+                  {selectedOrder.delivery_type === 'express' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 mr-2">
+                      ⚡ EXPRESS
+                    </span>
+                  )}
+                  Créée le {new Date(selectedOrder.created_at).toLocaleDateString('fr-FR')} à {new Date(selectedOrder.created_at).toLocaleTimeString('fr-FR')}
+                </p>
+              </div>
+              <div className={`px-4 py-2 rounded-full border flex items-center space-x-2 ${getStatusColor(selectedOrder.status)}`}>
+                {getStatusIcon(selectedOrder.status)}
+                <span className="font-medium">{getStatusLabel(selectedOrder.status)}</span>
+              </div>
+            </div>
+
+            {/* Actions de statut */}
+            <div className="mb-8 p-6 bg-slate-50 rounded-xl">
+              <h3 className="font-semibold text-slate-900 mb-4">Modifier le statut de la commande :</h3>
+              <div className="flex flex-wrap gap-3">
+                {(['confirmed', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => updateOrderStatus(selectedOrder.id, status)}
+                    disabled={selectedOrder.status === status || updatingStatus === selectedOrder.id}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                      selectedOrder.status === status
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : updatingStatus === selectedOrder.id
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-white border-2 border-slate-300 hover:border-brand-primary hover:bg-brand-50 text-slate-700 hover:text-brand-primary'
+                    }`}
+                  >
+                    {updatingStatus === selectedOrder.id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-primary"></div>
+                    ) : (
+                      getStatusIcon(status)
+                    )}
+                    <span>{getStatusLabel(status)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Informations client */}
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900 mb-4">Informations client</h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <User className="h-5 w-5 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-slate-900">{selectedOrder.customer?.name}</p>
+                        {selectedOrder.customer?.contact_name && (
+                          <p className="text-sm text-slate-600">Contact: {selectedOrder.customer.contact_name}</p>
+                        )}
+                        <p className="text-sm text-slate-600">
+                          Type: {selectedOrder.customer?.type === 'professional' ? 'Professionnel' : 'Particulier'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Phone className="h-4 w-4 text-slate-400" />
+                      <a href={`tel:${selectedOrder.customer?.phone}`} className="text-brand-primary hover:underline font-medium">
+                        {selectedOrder.customer?.phone}
+                      </a>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Mail className="h-4 w-4 text-slate-400" />
+                      <a href={`mailto:${selectedOrder.customer?.email}`} className="text-brand-primary hover:underline">
+                        {selectedOrder.customer?.email}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations de livraison */}
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900 mb-4">Informations de livraison</h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Truck className="h-5 w-5 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {selectedOrder.delivery_type === 'express' ? 'Express (< 1H)' : 'Standard'}
+                        </p>
+                        {selectedOrder.delivery_type === 'express' && (
+                          <p className="text-sm text-orange-600 font-medium">Priorité maximale</p>
+                        )}
+                      </div>
+                    </div>
+                    {selectedOrder.delivery_date && (
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Clock className="h-4 w-4 text-slate-400" />
+                        <p className="text-slate-700">{selectedOrder.delivery_date} à {selectedOrder.delivery_time}</p>
+                      </div>
+                    )}
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="h-4 w-4 text-slate-400 mt-1" />
+                      <div>
+                        <p className="text-slate-700 font-medium">{selectedOrder.delivery_address}</p>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.delivery_address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand-primary hover:underline text-sm flex items-center space-x-1 mt-1"
+                        >
+                          <Navigation className="h-3 w-3" />
+                          <span>Ouvrir dans Maps</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Articles commandés */}
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold text-slate-900 mb-4">Articles commandés</h3>
+              <div className="bg-slate-50 rounded-xl p-6">
+                <div className="space-y-4">
+                  {selectedOrder.order_items?.map((item, index) => (
+                    <div key={index} className="bg-white rounded-lg p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-slate-900 capitalize">
+                          {item.ice_type === 'nuggets' ? "Nugget's" : 
+                           item.ice_type === 'gourmet' ? 'Gourmet' : 
+                           'Glace Paillette'}
+                        </p>
+                        <p className="text-sm text-slate-600">{item.quantity}x {item.package_size}</p>
+                        <p className="text-xs text-slate-500">Prix unitaire: {item.unit_price} MAD</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-900">{item.total_price} MAD</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="mt-8 pt-6 border-t border-slate-200">
+              <div className="bg-slate-50 rounded-xl p-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600">Sous-total:</span>
+                    <span className="font-medium">{selectedOrder.subtotal} MAD</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600">Frais de livraison:</span>
+                    <span className="font-medium">{selectedOrder.delivery_fee} MAD</span>
+                  </div>
+                  <div className="border-t border-slate-200 pt-2">
+                    <div className="flex justify-between items-center text-xl font-bold">
+                      <span className="text-slate-900">Total:</span>
+                      <span className="text-brand-primary">{selectedOrder.total} MAD</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {selectedOrder.notes && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-slate-900 mb-2">Notes spéciales:</h4>
+                <p className="text-slate-700">{selectedOrder.notes}</p>
+              </div>
+            )}
+
+            {/* Actions rapides */}
+            <div className="mt-8 flex flex-wrap gap-4">
+              <button
+                onClick={() => handleDownloadPDF(selectedOrder)}
+                className="bg-brand-primary hover:bg-brand-secondary text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span>Télécharger bon de commande</span>
+              </button>
+              <a
+                href={`tel:${selectedOrder.customer?.phone}`}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                <span>Appeler client</span>
+              </a>
+              <a
+                href={`mailto:${selectedOrder.customer?.email}`}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <Mail className="h-4 w-4" />
+                <span>Envoyer email</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Liste des commandes
     <div className="space-y-6">
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -405,7 +637,10 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setTimeout(scrollToTop, 100);
+                          }}
                           className="text-brand-primary hover:text-brand-secondary transition-colors"
                           title="Voir les détails"
                         >
@@ -427,6 +662,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 
