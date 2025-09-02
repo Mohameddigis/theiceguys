@@ -85,8 +85,12 @@ async function sendEmailWithSupabaseSMTP({ from, to, subject, html }: {
   subject: string;
   html: string;
 }) {
-  // Create Supabase client
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  // Get Resend API key from environment variables
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY environment variable is not set');
+  }
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   
   if (!supabaseUrl || !supabaseServiceKey) {
