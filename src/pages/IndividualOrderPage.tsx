@@ -30,6 +30,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState({
+    date: '',
+    time: '',
     address: ''
   });
   const [customerInfo, setCustomerInfo] = useState({
@@ -38,6 +40,15 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     email: '',
     notes: ''
   });
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Scroll to top when step changes
   const handleStepChange = (step: number) => {
@@ -383,7 +394,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 return (
                   <div 
                     key={iceType.id} 
-                    onClick={() => handleIceTypeToggle(iceType)}
+    
+  )
+}                onClick={() => handleIceTypeToggle(iceType)}
                     className={`bg-white rounded-xl shadow-lg border-2 transition-all duration-300 cursor-pointer hover:shadow-xl ${
                     isSelected ? 'border-green-500 shadow-xl' : 'border-slate-200 hover:border-green-300'
                   }`}>
@@ -555,15 +568,31 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 <p className="text-orange-700 font-semibold mb-2">Livrer en moins de 1H</p>
                 <p className="text-sm text-orange-600 mb-2">Disponible de 8h à 23h</p>
                 <div className="bg-orange-100 rounded-lg p-3">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Adresse complète *
-                  </label>
-                  <input
-                    type="text"
-                    value={deliveryInfo.address}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  <p className="text-orange-800 font-semibold">+100 MAD</p>
+                </div>
+                {!isExpressAvailable() && (
+                  <div className="mt-2 text-xs text-orange-600">
+                    Non disponible actuellement (disponible de 8h à 23h)
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Date and Time Selection (only for standard delivery) */}
+            {!isExpressDelivery && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
+                    <input
+                      type="date"
+                      value={deliveryInfo.date}
+                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
                     <select
