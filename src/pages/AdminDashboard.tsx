@@ -431,6 +431,16 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   );
 
   const renderCustomers = () => (
+    const filteredCustomers = customers.filter(customer => {
+      const matchesSearch = searchTerm === '' || 
+        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phone.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = statusFilter === 'all' || customer.type === statusFilter;
+      
+      return matchesSearch && matchesType;
+    });
+
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
