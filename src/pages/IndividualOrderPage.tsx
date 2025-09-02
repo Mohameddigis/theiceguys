@@ -32,8 +32,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
-    address: '',
-    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -43,10 +41,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   });
 
   // Scroll to top when step changes
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleStepChange = (step: number) => {
     setCurrentStep(step);
     setTimeout(scrollToTop, 100);
@@ -590,19 +584,22 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             )}
 
-            <div className="flex justify-end">
-              <button
-                onClick={() => handleStepChange(2)}
-                disabled={!canProceedToStep2()}
-                className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
-                  canProceedToStep2()
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
-                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                }`}
-              >
-                Continuer vers la livraison
-              </button>
-            </div>
+            {/* Bouton flottant pour continuer */}
+            {canProceedToStep2() && (
+              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+                <button
+                  onClick={() => handleStepChange(2)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-3"
+                >
+                  <span>Continuer vers la livraison</span>
+                  <div className="bg-white bg-opacity-20 rounded-full p-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -657,10 +654,10 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             </div>
 
-            {/* Delivery Schedule (only for standard delivery) */}
+            {/* Delivery Time Selection for Standard */}
             {!isExpressDelivery && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifiez votre livraison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
@@ -705,19 +702,17 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                   <span>Ma position</span>
                 </button>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Adresse complète *
-                  </label>
-                  <input
-                    type="text"
-                    value={deliveryInfo.address}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="Entrez votre adresse complète"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Adresse complète *
+                </label>
+                <input
+                  type="text"
+                  value={deliveryInfo.address}
+                  onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Entrez votre adresse complète (rue, quartier, ville)"
+                />
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
