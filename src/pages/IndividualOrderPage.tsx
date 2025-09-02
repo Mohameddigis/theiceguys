@@ -32,8 +32,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
-    address: '',
-    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -165,23 +163,20 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
         const { latitude, longitude } = position.coords;
         
         try {
-          // Try to get address from coordinates using reverse geocoding
+          // Reverse geocoding using OpenStreetMap Nominatim
           const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoidGhlaWNlZ3V5cyIsImEiOiJjbTRkZGNqZGcwMGNzMmtzZGNqZGNqZGNqIn0.example&country=ma&proximity=${longitude},${latitude}&types=address,poi`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
           );
           
           if (response.ok) {
             const data = await response.json();
-            if (data.features && data.features.length > 0) {
-              const address = data.features[0].place_name;
-              setDeliveryInfo(prev => ({
-                ...prev,
-                address: address,
-                coordinates: [longitude, latitude]
-              }));
-            } else {
-              throw new Error('No address found');
-            }
+            const address = data.display_name || `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            
+            setDeliveryInfo(prev => ({
+              ...prev,
+              address: address,
+              coordinates: [longitude, latitude]
+            }));
           } else {
             throw new Error('Geocoding failed');
           }
@@ -653,33 +648,37 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             </div>
 
+            {/* Delivery Schedule (only for standard delivery) */}
             {!isExpressDelivery && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
-                  <input
-                    type="date"
-                    value={deliveryInfo.date}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
-                  <select
-                    value={deliveryInfo.time}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">Sélectionnez une heure</option>
-                    <option value="08:00-10:00">08:00 - 10:00</option>
-                    <option value="10:00-12:00">10:00 - 12:00</option>
-                    <option value="12:00-14:00">12:00 - 14:00</option>
-                    <option value="14:00-16:00">14:00 - 16:00</option>
-                    <option value="16:00-18:00">16:00 - 18:00</option>
-                    <option value="18:00-20:00">18:00 - 20:00</option>
-                  </select>
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
+                    <input
+                      type="date"
+                      value={deliveryInfo.date}
+                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
+                    <select
+                      value={deliveryInfo.time}
+                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    >
+                      <option value="">Sélectionnez une heure</option>
+                      <option value="08:00-10:00">08:00 - 10:00</option>
+                      <option value="10:00-12:00">10:00 - 12:00</option>
+                      <option value="12:00-14:00">12:00 - 14:00</option>
+                      <option value="14:00-16:00">14:00 - 16:00</option>
+                      <option value="16:00-18:00">16:00 - 18:00</option>
+                      <option value="18:00-20:00">18:00 - 20:00</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
