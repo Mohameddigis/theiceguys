@@ -34,7 +34,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   };
 
   useEffect(() => {
-    authenticateAdmin();
     loadData();
     
     // Actualiser les données toutes les 30 secondes
@@ -44,34 +43,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     
     return () => clearInterval(interval);
   }, []);
-
-  const authenticateAdmin = async () => {
-    try {
-      console.log('🔐 Authentification admin...');
-      
-      // Vérifier si déjà authentifié
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user?.id === '5bdebb14-ca43-4ee5-91cb-bc8c1e2a0a21') {
-        console.log('✅ Admin déjà authentifié');
-        return;
-      }
-      
-      // Authentifier avec l'email admin
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'commandes@theiceguys.com',
-        password: 'TheIceGuys2025.'
-      });
-      
-      if (error) {
-        console.error('❌ Erreur authentification admin:', error);
-      } else {
-        console.log('✅ Admin authentifié avec succès:', data.user?.id);
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'authentification admin:', error);
-    }
-  };
 
   const loadData = async () => {
     try {
