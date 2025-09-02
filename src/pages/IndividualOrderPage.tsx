@@ -32,6 +32,8 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
+    address: '',
+    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -41,6 +43,10 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   });
 
   // Scroll to top when step changes
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleStepChange = (step: number) => {
     setCurrentStep(step);
     setTimeout(scrollToTop, 100);
@@ -163,20 +169,23 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
         const { latitude, longitude } = position.coords;
         
         try {
-          // Reverse geocoding using OpenStreetMap Nominatim
+          // Try to get address from coordinates using reverse geocoding
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoidGhlaWNlZ3V5cyIsImEiOiJjbTRkZGNqZGcwMGNzMmtzZGNqZGNqZGNqIn0.example&country=ma&proximity=${longitude},${latitude}&types=address,poi`
           );
           
           if (response.ok) {
             const data = await response.json();
-            const address = data.display_name || `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-            
-            setDeliveryInfo(prev => ({
-              ...prev,
-              address: address,
-              coordinates: [longitude, latitude]
-            }));
+            if (data.features && data.features.length > 0) {
+              const address = data.features[0].place_name;
+              setDeliveryInfo(prev => ({
+                ...prev,
+                address: address,
+                coordinates: [longitude, latitude]
+              }));
+            } else {
+              throw new Error('No address found');
+            }
           } else {
             throw new Error('Geocoding failed');
           }
