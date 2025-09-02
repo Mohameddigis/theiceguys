@@ -880,6 +880,145 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             )}
           </div>
         </div>
+
+        {/* Driver Form Modal */}
+        {showDriverForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {editingDriver ? 'Modifier le livreur' : 'Nouveau livreur'}
+                  </h3>
+                  <button
+                    onClick={resetDriverForm}
+                    className="text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleDriverFormSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Nom complet *
+                    </label>
+                    <input
+                      type="text"
+                      value={driverFormData.name}
+                      onChange={(e) => setDriverFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Nom du livreur"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Téléphone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={driverFormData.phone}
+                      onChange={(e) => setDriverFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="+212 6XX XXX XXX"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={driverFormData.email}
+                      onChange={(e) => setDriverFormData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="email@example.com"
+                      required
+                      disabled={!!editingDriver} // Email non modifiable en édition
+                    />
+                  </div>
+
+                  {!editingDriver && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Mot de passe *
+                      </label>
+                      <input
+                        type="password"
+                        value={driverFormData.password}
+                        onChange={(e) => setDriverFormData(prev => ({ ...prev, password: e.target.value }))}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Mot de passe sécurisé"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Statut
+                    </label>
+                    <select
+                      value={driverFormData.current_status}
+                      onChange={(e) => setDriverFormData(prev => ({ ...prev, current_status: e.target.value as any }))}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="offline">Hors ligne</option>
+                      <option value="available">Disponible</option>
+                      <option value="busy">Occupé</option>
+                      <option value="on_break">En pause</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={driverFormData.is_active}
+                      onChange={(e) => setDriverFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                      className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor="is_active" className="text-sm font-medium text-slate-700">
+                      Livreur actif
+                    </label>
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={resetDriverForm}
+                      className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={savingDriver}
+                      className={`flex-1 px-4 py-3 rounded-lg font-semibold text-white transition-all ${
+                        savingDriver
+                          ? 'bg-slate-400 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    >
+                      {savingDriver ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Sauvegarde...</span>
+                        </div>
+                      ) : (
+                        editingDriver ? 'Modifier' : 'Créer'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       )}
     </div>
   );
