@@ -430,7 +430,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     </div>
   );
 
-  const renderCustomers = () => (
+  const renderCustomers = () => {
     const filteredCustomers = customers.filter(customer => {
       const matchesSearch = searchTerm === '' || 
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -441,6 +441,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       return matchesSearch && matchesType;
     });
 
+    return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -606,7 +607,8 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   const renderDrivers = () => (
     <div className="space-y-6">
