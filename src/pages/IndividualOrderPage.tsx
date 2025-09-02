@@ -4,6 +4,7 @@ import { orderService } from '../lib/supabase';
 
 interface IndividualOrderPageProps {
   onBack: () => void;
+  onOrderComplete: (orderNumber: string) => void;
 }
 
 interface IceType {
@@ -25,7 +26,7 @@ interface OrderItem {
   };
 }
 
-function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
+function IndividualOrderPage({ onBack, onOrderComplete }: IndividualOrderPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
@@ -280,6 +281,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
   const handleWhatsAppOrder = () => {
     const message = generateWhatsAppMessage();
+    const orderNumber = `CMD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     
     // Save order to database first, then send email and WhatsApp
     saveOrderToDatabase()
@@ -289,12 +291,16 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
         
         // Open WhatsApp
         window.open(`https://wa.me/212693675981?text=${message}`, '_blank');
+        
+        // Show thank you page
+        onOrderComplete(orderNumber);
       })
       .catch((error) => {
         console.error('Erreur lors de la sauvegarde:', error);
         // Still allow WhatsApp even if database save fails
         alert('Commande envoyée mais non sauvegardée. Veuillez contacter le support.');
         window.open(`https://wa.me/212693675981?text=${message}`, '_blank');
+        onOrderComplete(orderNumber);
       });
   };
 

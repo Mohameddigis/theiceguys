@@ -12,10 +12,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import DriverLogin from './pages/DriverLogin';
 import DriverDashboard from './pages/DriverDashboard';
+import ThankYouPage from './pages/ThankYouPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [customerType, setCustomerType] = useState<'professional' | 'individual' | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string>('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(false);
   const [driverId, setDriverId] = useState<string>('');
@@ -102,6 +104,7 @@ function App() {
   const handleBackToHome = () => {
     setCurrentPage('home');
     setCustomerType(null);
+    setOrderNumber('');
     setIsAdminAuthenticated(false);
     setIsDriverAuthenticated(false);
     // Clear admin session when going back to home
@@ -115,6 +118,12 @@ function App() {
     // Clear URL hash
     window.location.hash = '';
     // Scroll to top when going back to home
+    setTimeout(scrollToTop, 100);
+  };
+
+  const handleOrderComplete = (orderNum: string) => {
+    setOrderNumber(orderNum);
+    setCurrentPage('thank-you');
     setTimeout(scrollToTop, 100);
   };
 
@@ -165,11 +174,13 @@ function App() {
         return <Blog />;
       case 'order':
         if (customerType === 'professional') {
-          return <ProfessionalOrderPage onBack={handleBackToHome} />;
+          return <ProfessionalOrderPage onBack={handleBackToHome} onOrderComplete={handleOrderComplete} />;
         } else if (customerType === 'individual') {
-          return <IndividualOrderPage onBack={handleBackToHome} />;
+          return <IndividualOrderPage onBack={handleBackToHome} onOrderComplete={handleOrderComplete} />;
         }
         return <Hero onOrderClick={handleOrderClick} />;
+      case 'thank-you':
+        return <ThankYouPage onBack={handleBackToHome} orderNumber={orderNumber} customerType={customerType || 'individual'} />;
       case 'admin':
        if (isAdminAuthenticated) {
          return <AdminDashboard onBack={handleAdminLogout} />;
