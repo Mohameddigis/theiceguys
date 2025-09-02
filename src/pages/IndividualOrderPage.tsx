@@ -788,6 +788,24 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 Continuer vers les informations
               </button>
             </div>
+
+            {/* Bouton flottant pour continuer */}
+            {(deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time))) && (
+              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+                <button
+                  onClick={() => handleStepChange(3)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3"
+                >
+                  <span className="hidden sm:block">Continuer vers les informations</span>
+                  <span className="block sm:hidden">Continuer</span>
+                  <div className="bg-white bg-opacity-20 rounded-full p-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -922,6 +940,20 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 <span>Envoyer via WhatsApp</span>
               </button>
             </div>
+
+            {/* Bouton flottant pour finaliser */}
+            {(customerInfo.name && customerInfo.phone && customerInfo.email) && (
+              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+                <button
+                  onClick={handleWhatsAppOrder}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-semibold text-sm sm:text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center space-x-2 sm:space-x-3"
+                >
+                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <span className="hidden sm:block">Envoyer via WhatsApp</span>
+                  <span className="block sm:hidden">Envoyer</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
