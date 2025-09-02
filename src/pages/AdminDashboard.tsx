@@ -613,7 +613,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   )}
                   </div>
                 </div>
-                
                 <div className="border-t border-slate-200 pt-4">
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div>
