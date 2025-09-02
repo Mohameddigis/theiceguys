@@ -102,7 +102,7 @@ function Hero({ onOrderClick }: HeroProps) {
             <div className="space-y-6">
               <div className="flex justify-center mb-8">
                 <img 
-                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/Logo%20The%20Ice%20Guys%20Fond%20blanc%20long.pdf.png"
+                  src="https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/icon%20ice%20guys.png"
                   alt="The Ice Guys"
                   className="w-full max-w-xs sm:max-w-sm lg:max-w-md h-auto drop-shadow-2xl animate-pulse hover:animate-bounce transition-all duration-300"
                 />
