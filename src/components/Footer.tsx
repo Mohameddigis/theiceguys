@@ -110,6 +110,16 @@ function Footer() {
         </div>
       </div>
     </footer>
+      {/* Admin Link */}
+      <div className="border-t border-slate-800 mt-8 pt-8 text-center">
+        <a
+          href="#admin"
+          className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
+        >
+          <span>Administration</span>
+        </a>
+      </div>
+
   );
 }
 
