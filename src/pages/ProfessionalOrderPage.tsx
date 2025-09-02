@@ -163,20 +163,23 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
         const { latitude, longitude } = position.coords;
         
         try {
-          // Reverse geocoding using OpenStreetMap Nominatim
+          // Try to get address from coordinates using reverse geocoding
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoidGhlaWNlZ3V5cyIsImEiOiJjbTRkZGNqZGcwMGNzMmtzZGNqZGNqZGNqIn0.example&country=ma&proximity=${longitude},${latitude}&types=address,poi`
           );
           
           if (response.ok) {
             const data = await response.json();
-            const address = data.display_name || `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-            
-            setDeliveryInfo(prev => ({
-              ...prev,
-              address: address,
-              coordinates: [longitude, latitude]
-            }));
+            if (data.features && data.features.length > 0) {
+              const address = data.features[0].place_name;
+              setDeliveryInfo(prev => ({
+                ...prev,
+                address: address,
+                coordinates: [longitude, latitude]
+              }));
+            } else {
+              throw new Error('No address found');
+            }
           } else {
             throw new Error('Geocoding failed');
           }
@@ -648,10 +651,10 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </div>
             </div>
 
-            {/* Delivery Schedule (only for standard delivery) */}
+            {/* Delivery Time Selection for Standard */}
             {!isExpressDelivery && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier votre livraison</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifiez votre livraison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
@@ -690,25 +693,23 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                 <button
                   id="location-btn"
                   onClick={getCurrentLocation}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                  className="flex items-center space-x-2 px-4 py-2 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg transition-colors text-sm font-medium"
                 >
                   <Navigation className="h-4 w-4" />
                   <span>Ma position</span>
                 </button>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Adresse complète *
-                  </label>
-                  <input
-                    type="text"
-                    value={deliveryInfo.address}
-                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="Entrez votre adresse complète"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Adresse complète *
+                </label>
+                <input
+                  type="text"
+                  value={deliveryInfo.address}
+                  onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Entrez votre adresse complète (rue, quartier, ville)"
+                />
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
