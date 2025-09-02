@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -15,24 +16,34 @@ function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const ADMIN_EMAIL = 'commandes@glaconsmarrakech.com';
-  const ADMIN_PASSWORD = 'Glaconsmarrakech2025.';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Simulate loading delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
 
-    if (credentials.email === ADMIN_EMAIL && credentials.password === ADMIN_PASSWORD) {
-      // Store admin session
-      localStorage.setItem('admin_authenticated', 'true');
-      localStorage.setItem('admin_login_time', Date.now().toString());
-      onLogin();
-    } else {
-      setError('Email ou mot de passe incorrect');
+      if (authError) {
+        setError('Email ou mot de passe incorrect');
+        setLoading(false);
+        return;
+      }
+
+      if (data.user && data.user.email === 'commandes@glaconsmarrakech.com') {
+        // Store admin session
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_login_time', Date.now().toString());
+        onLogin();
+      } else {
+        setError('Accès non autorisé - Compte administrateur requis');
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      setError('Erreur de connexion. Veuillez réessayer.');
     }
     
     setLoading(false);
