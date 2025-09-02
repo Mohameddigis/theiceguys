@@ -108,12 +108,21 @@ function Footer({ onPageChange }: FooterProps) {
 
         {/* Admin Link */}
         <div className="border-t border-slate-800 mt-8 pt-8 text-center">
-          <button
-            onClick={() => onPageChange?.('admin')}
-            className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm mb-4"
-          >
-            <span>Administration</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 mb-4">
+            <button
+              onClick={() => onPageChange?.('admin')}
+              className="inline-flex items-center space-x-2 text-slate-400 hover:text-white transition-colors text-sm"
+            >
+              <span>Administration</span>
+            </button>
+            <span className="hidden sm:block text-slate-600">|</span>
+            <button
+              onClick={() => onPageChange?.('driver')}
+              className="inline-flex items-center space-x-2 text-slate-400 hover:text-green-400 transition-colors text-sm"
+            >
+              <span>🚚 Espace Livreur</span>
+            </button>
+          </div>
         </div>
 
         {/* Copyright */}
