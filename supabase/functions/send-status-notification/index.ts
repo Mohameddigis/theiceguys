@@ -46,7 +46,7 @@ serve(async (req) => {
 
     // Send email using Resend API
     const emailResponse = await sendEmailWithResend({
-      from: 'The Ice Guys <commandes@theiceguys.com>',
+      from: 'The Ice Guys <onboarding@resend.dev>',
       to: customerEmail,
       subject: `Mise à jour de votre commande The Ice Guys - ${orderNumber}`,
       html: emailHtml
