@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Building2, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Users, Package, Truck, Clock, MapPin, User, Phone, Mail, MessageCircle, Rocket, Check } from 'lucide-react';
 import { orderService } from '../lib/supabase';
 
-interface ProfessionalOrderPageProps {
+interface IndividualOrderPageProps {
   onBack: () => void;
 }
 
@@ -25,33 +25,19 @@ interface OrderItem {
   };
 }
 
-function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
+function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState({
-    date: '',
-    time: '',
-    street: '',
-    number: '',
     address: ''
   });
   const [customerInfo, setCustomerInfo] = useState({
-    companyName: '',
-    contactName: '',
+    name: '',
     phone: '',
     email: '',
     notes: ''
   });
-
-  // Scroll to top function
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
-  };
 
   // Scroll to top when step changes
   const handleStepChange = (step: number) => {
@@ -63,28 +49,28 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     {
       id: 'nuggets',
       name: "Nugget's",
-      description: 'Glaçons en forme de pépites, parfaits pour les cocktails et boissons premium',
-      price5kg: 25,
-      price10kg: 45,
-      price20kg: 80,
+      description: 'Glaçons en forme de pépites, parfaits pour vos cocktails et boissons',
+      price5kg: 30,
+      price10kg: 60,
+      price20kg: 100,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/nugget-verre.png'
     },
     {
       id: 'gourmet',
       name: 'Gourmet',
-      description: 'Glaçons de forme cylindrique, idéaux pour les établissements haut de gamme',
-      price5kg: 30,
-      price10kg: 55,
-      price20kg: 95,
+      description: 'Glaçons de forme cylindrique, idéaux pour vos événements spéciaux',
+      price5kg: 35,
+      price10kg: 70,
+      price20kg: 120,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/gourmet-verre.png'
     },
     {
       id: 'cubique',
       name: 'Glace Paillette',
       description: 'Glace en paillettes, idéale pour la présentation et le refroidissement rapide',
-      price5kg: 20,
-      price10kg: 35,
-      price20kg: 65,
+      price5kg: 25,
+      price10kg: 50,
+      price20kg: 85,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/glace-en-paillettes-110145.jpg'
     }
   ];
@@ -155,17 +141,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     }
   };
 
-  const handleAddressChange = (field: 'street' | 'number', value: string) => {
-    setDeliveryInfo(prev => {
-      const updated = { ...prev, [field]: value };
-      // Construire l'adresse complète
-      const fullAddress = `${updated.number} ${updated.street}, Marrakech`.trim();
-      return { ...updated, address: fullAddress };
-    });
-  };
-
   const generateWhatsAppMessage = () => {
-    let message = `🏢 *COMMANDE PROFESSIONNELLE - THE ICE GUYS*\n\n`;
+    let message = `🏠 *COMMANDE PARTICULIER - THE ICE GUYS*\n\n`;
     
     message += `📋 *DÉTAILS DE LA COMMANDE:*\n`;
     selectedItems.forEach(item => {
@@ -186,9 +163,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     }
     message += `   • Adresse: ${deliveryInfo.address}\n`;
 
-    message += `\n🏢 *INFORMATIONS ENTREPRISE:*\n`;
-    message += `   • Entreprise: ${customerInfo.companyName}\n`;
-    message += `   • Contact: ${customerInfo.contactName}\n`;
+    message += `\n👤 *INFORMATIONS CLIENT:*\n`;
+    message += `   • Nom: ${customerInfo.name}\n`;
     message += `   • Téléphone: ${customerInfo.phone}\n`;
     message += `   • Email: ${customerInfo.email}\n`;
     if (customerInfo.notes) message += `   • Notes: ${customerInfo.notes}\n`;
@@ -223,9 +199,9 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     try {
       const orderData = {
         customer: {
-          type: 'professional' as const,
-          name: customerInfo.companyName,
-          contact_name: customerInfo.contactName,
+          type: 'individual' as const,
+          name: customerInfo.name,
+          contact_name: null,
           phone: customerInfo.phone,
           email: customerInfo.email
         },
@@ -235,7 +211,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
           delivery_date: isExpressDelivery ? null : deliveryInfo.date,
           delivery_time: isExpressDelivery ? null : deliveryInfo.time,
           delivery_address: deliveryInfo.address,
-          delivery_coordinates: deliveryInfo.coordinates,
+          delivery_coordinates: deliveryInfo.coordinates || null,
           notes: customerInfo.notes || null,
           subtotal: calculateTotal() - (isExpressDelivery ? 100 : 0),
           delivery_fee: isExpressDelivery ? 100 : 0,
@@ -287,7 +263,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
     try {
       const orderData = {
         customerEmail: customerInfo.email,
-        customerName: customerInfo.contactName,
+        customerName: customerInfo.name,
         orderDetails: {
           orderNumber: `CMD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
           items: selectedItems.map(item => ({
@@ -297,7 +273,6 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                        (item.quantities['10kg'] * item.iceType.price10kg) +
                        (item.quantities['20kg'] * item.iceType.price20kg)
           })),
-          delivery: {
             delivery_coordinates: null,
             type: isExpressDelivery ? 'express' : 'standard',
             date: deliveryInfo.date,
@@ -305,8 +280,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
             address: deliveryInfo.address
           },
           total: calculateTotal(),
-          customerType: 'professional',
-          companyName: customerInfo.companyName
+          customerType: 'individual'
         }
       };
 
@@ -332,25 +306,25 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   const steps = [
     { number: 1, title: 'Sélection', icon: Package },
     { number: 2, title: 'Livraison', icon: Truck },
-    { number: 3, title: 'Informations', icon: Building2 }
+    { number: 3, title: 'Informations', icon: Users }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-green-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <button
               onClick={onBack}
-              className="w-full sm:w-auto px-8 py-3 rounded-lg font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors flex items-center justify-center space-x-3"
+              className="w-full sm:w-auto px-8 py-3 rounded-lg font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors flex items-center justify-center space-x-2"
             >
               <ArrowLeft className="h-5 w-5" />
               <span>Retour</span>
             </button>
             <div className="flex items-center space-x-3">
-              <Building2 className="h-6 w-6 text-brand-primary" />
-              <h1 className="text-xl font-bold text-slate-900">Commande Professionnelle</h1>
+              <Users className="h-6 w-6 text-green-600" />
+              <h1 className="text-xl font-bold text-slate-900">Commande Particulier</h1>
             </div>
           </div>
         </div>
@@ -362,7 +336,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
           <div className="flex items-center justify-between relative">
             <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-200"></div>
             <div 
-              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-500"
+              className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
               style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
             ></div>
             
@@ -375,13 +349,13 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <div key={step.number} className="flex flex-col items-center relative z-10">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isActive 
-                      ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg' 
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg' 
                       : 'bg-white border-2 border-slate-300 text-slate-400'
                   } ${isCurrent ? 'scale-110 shadow-xl' : ''}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className={`mt-2 text-sm font-medium ${
-                    isActive ? 'text-brand-primary' : 'text-slate-400'
+                    isActive ? 'text-green-600' : 'text-slate-400'
                   }`}>
                     {step.title}
                   </span>
@@ -397,8 +371,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
         {currentStep === 1 && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Sélectionnez vos glaçons</h2>
-              <p className="text-slate-600">Choisissez les types et quantités adaptés à votre établissement</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Choisissez vos glaçons</h2>
+              <p className="text-slate-600">Sélectionnez les types et quantités pour votre événement ou usage personnel</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -411,7 +385,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     key={iceType.id} 
                     onClick={() => handleIceTypeToggle(iceType)}
                     className={`bg-white rounded-xl shadow-lg border-2 transition-all duration-300 cursor-pointer hover:shadow-xl ${
-                    isSelected ? 'border-brand-secondary shadow-xl' : 'border-slate-200 hover:border-brand-light'
+                    isSelected ? 'border-green-500 shadow-xl' : 'border-slate-200 hover:border-green-300'
                   }`}>
                    {/* Ice Type Image */}
                    <div className="aspect-video bg-gradient-to-br from-blue-100 to-cyan-100 relative overflow-hidden rounded-t-xl">
@@ -422,7 +396,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                      {isSelected && (
-                       <div className="absolute top-3 right-3 bg-brand-secondary text-white rounded-full p-2">
+                       <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full p-2">
                          <Check className="h-5 w-5" />
                        </div>
                      )}
@@ -433,8 +407,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                         <h3 className="text-xl font-bold text-slate-900">{iceType.name}</h3>
                         <div className={`w-6 h-6 rounded-full border-2 transition-all ${
                             isSelected 
-                              ? 'bg-brand-secondary border-brand-secondary' 
-                              : 'border-slate-300 hover:border-brand-secondary'
+                              ? 'bg-green-500 border-green-500' 
+                              : 'border-slate-300 hover:border-green-500'
                           }`}
                         >
                           {isSelected && <div className="w-full h-full rounded-full bg-white scale-50"></div>}
@@ -475,7 +449,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                                     e.stopPropagation();
                                     handleQuantityChange(iceType.id, size, selectedItem.quantities[size] + 1);
                                   }}
-                                  className="w-8 h-8 rounded-full bg-brand-secondary hover:bg-brand-primary text-white flex items-center justify-center transition-colors"
+                                  className="w-8 h-8 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-colors"
                                 >
                                   +
                                 </button>
@@ -525,7 +499,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 disabled={!canProceedToStep2()}
                 className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
                   canProceedToStep2()
-                    ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:shadow-lg'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
               >
@@ -546,15 +520,15 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Standard Delivery */}
               <div className={`bg-white rounded-xl shadow-lg p-6 border-2 transition-all cursor-pointer ${
-                !isExpressDelivery ? 'border-brand-secondary shadow-xl' : 'border-slate-200 hover:border-brand-light'
+                !isExpressDelivery ? 'border-green-500 shadow-xl' : 'border-slate-200 hover:border-green-300'
               }`} onClick={() => setIsExpressDelivery(false)}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <Truck className="h-6 w-6 text-brand-primary" />
+                    <Truck className="h-6 w-6 text-green-600" />
                     <h3 className="text-xl font-bold text-slate-900">Livraison Standard</h3>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    !isExpressDelivery ? 'bg-brand-secondary border-brand-secondary' : 'border-slate-300'
+                    !isExpressDelivery ? 'bg-green-500 border-green-500' : 'border-slate-300'
                   }`}>
                     {!isExpressDelivery && <div className="w-full h-full rounded-full bg-white scale-50"></div>}
                   </div>
@@ -581,39 +555,69 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <p className="text-orange-700 font-semibold mb-2">Livrer en moins de 1H</p>
                 <p className="text-sm text-orange-600 mb-2">Disponible de 8h à 23h</p>
                 <div className="bg-orange-100 rounded-lg p-3">
-                  <p className="text-orange-800 font-semibold">+100 MAD</p>
-                </div>
-                {!isExpressAvailable() && (
-                  <div className="mt-2 text-xs text-orange-600">
-                    Non disponible actuellement (disponible de 8h à 23h)
-                  </div>
-                )}
-              </div>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Adresse complète *
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryInfo.address}
+                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
+          setDeliveryInfo(prev => ({
+            ...prev,
+            address: fallbackAddress,
+            coordinates: [longitude, latitude]
+          }));
+        }
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        let errorMessage = 'Impossible d\'obtenir votre position.';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Accès à la localisation refusé. Veuillez autoriser la géolocalisation.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Position non disponible.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Délai d\'attente dépassé pour la géolocalisation.';
+            break;
+        }
+        
+        alert(errorMessage);
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
 
-            {/* Date and Time Selection (only for standard delivery) */}
-            {!isExpressDelivery && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Planifier la livraison</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Date de livraison</label>
-                    <input
-                      type="date"
-                      value={deliveryInfo.date}
-                      onChange={(e) => setDeliveryInfo(prev => ({ ...prev, date: e.target.value }))}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-                    />
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Heure de livraison</label>
                     <select
                       value={deliveryInfo.time}
                       onChange={(e) => setDeliveryInfo(prev => ({ ...prev, time: e.target.value }))}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     >
-                      <option value="">Sélectionner une heure</option>
+                      <option value="">Sélectionnez une heure</option>
                       <option value="08:00-10:00">08:00 - 10:00</option>
                       <option value="10:00-12:00">10:00 - 12:00</option>
                       <option value="12:00-14:00">12:00 - 14:00</option>
@@ -628,38 +632,88 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
 
             {/* Address Selection */}
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Adresse de livraison</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Adresse de livraison</h3>
+                <button
+                  id="location-btn"
+                  onClick={getCurrentLocation}
+                  className="flex items-center space-x-2 px-4 py-2 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Navigation className="h-4 w-4" />
+                  <span>Ma position</span>
+                </button>
+              </div>
+                <h3 className="text-lg font-semibold text-slate-900">Adresse de livraison</h3>
+                <button
+                  id="location-btn"
+                  onClick={getCurrentLocation}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Navigation className="h-4 w-4" />
+                  <span>Ma position</span>
+                </button>
+              </div>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Numéro *
-                    </label>
-                    <input
-                      type="text"
-                      value={deliveryInfo.number}
-                      onChange={(e) => handleAddressChange('number', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-                      placeholder="123"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Rue *
-                    </label>
-                    <input
-                      type="text"
-                      value={deliveryInfo.street}
-                      onChange={(e) => handleAddressChange('street', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-                      placeholder="Rue Mohammed V"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Adresse complète *
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryInfo.address}
+                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
+          setDeliveryInfo(prev => ({
+            ...prev,
+            address: fallbackAddress,
+            coordinates: [longitude, latitude]
+          }));
+        }
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        let errorMessage = 'Impossible d\'obtenir votre position.';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Accès à la localisation refusé. Veuillez autoriser la géolocalisation.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Position non disponible.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Délai d\'attente dépassé pour la géolocalisation.';
+            break;
+        }
+        
+        alert(errorMessage);
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
                 </div>
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
-                    <MapPin className="h-5 w-5 mt-0.5 text-brand-primary" />
+                    <MapPin className="h-5 w-5 mt-0.5 text-blue-600" />
                     <div>
                       <p className="font-medium text-slate-900">Ville : Marrakech</p>
                       {deliveryInfo.address && (
@@ -670,6 +724,16 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                       <p className="text-sm text-blue-700 mt-2">
                         ✅ Zone de livraison couverte
                       </p>
+                      {deliveryInfo.coordinates && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          📍 Position GPS enregistrée
+                        </p>
+                      )}
+                      {deliveryInfo.coordinates && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          📍 Position GPS enregistrée
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -693,10 +757,10 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
               </button>
               <button
                 onClick={() => handleStepChange(3)}
-                disabled={!deliveryInfo.street || !deliveryInfo.number || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
+                disabled={!deliveryInfo.address || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
                 className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
-                  (deliveryInfo.street && deliveryInfo.number && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
-                    ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:shadow-lg'
+                  (deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
               >
@@ -710,29 +774,19 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
         {currentStep === 3 && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Informations de l'entreprise</h2>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Vos informations</h2>
               <p className="text-slate-600">Complétez vos informations pour finaliser la commande</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom de l'entreprise *</label>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom complet *</label>
                   <input
                     type="text"
-                    value={customerInfo.companyName}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, companyName: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-                    placeholder="Nom de votre établissement"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Nom du contact *</label>
-                  <input
-                    type="text"
-                    value={customerInfo.contactName}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, contactName: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                    value={customerInfo.name}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Votre nom complet"
                   />
                 </div>
@@ -742,7 +796,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     type="tel"
                     value={customerInfo.phone}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="+212 6XX XXX XXX"
                   />
                 </div>
@@ -752,8 +806,8 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                     type="email"
                     value={customerInfo.email}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
-                    placeholder="contact@entreprise.com"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="votre@email.com"
                   />
                 </div>
               </div>
@@ -763,7 +817,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                   value={customerInfo.notes}
                   onChange={(e) => setCustomerInfo(prev => ({ ...prev, notes: e.target.value }))}
                   rows={4}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary resize-none"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
                   placeholder="Instructions spéciales, accès, étage, etc."
                 />
               </div>
@@ -798,7 +852,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                   <h4 className="font-semibold text-slate-900 mb-2">Livraison:</h4>
                   <div className="bg-slate-50 rounded-lg p-3">
                     <div className="flex items-center space-x-2 mb-2">
-                      {isExpressDelivery ? <Rocket className="h-4 w-4 text-orange-600" /> : <Truck className="h-4 w-4 text-brand-primary" />}
+                      {isExpressDelivery ? <Rocket className="h-4 w-4 text-orange-600" /> : <Truck className="h-4 w-4 text-green-600" />}
                       <span className="font-medium">
                         {isExpressDelivery ? 'Livraison Express (moins de 1H)' : 'Livraison Standard'}
                       </span>
@@ -820,7 +874,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-2xl font-bold">
                     <span>Total:</span>
-                    <span className="text-brand-primary">{calculateTotal()} MAD</span>
+                    <span className="text-green-600">{calculateTotal()} MAD</span>
                   </div>
                 </div>
               </div>
@@ -835,9 +889,9 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
               </button>
               <button
                 onClick={handleWhatsAppOrder}
-                disabled={!customerInfo.companyName || !customerInfo.contactName || !customerInfo.phone || !customerInfo.email}
+                disabled={!customerInfo.name || !customerInfo.phone || !customerInfo.email}
                 className={`w-full sm:w-auto px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center space-x-3 ${
-                  customerInfo.companyName && customerInfo.contactName && customerInfo.phone && customerInfo.email
+                  customerInfo.name && customerInfo.phone && customerInfo.email
                     ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
@@ -853,4 +907,4 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   );
 }
 
-export default ProfessionalOrderPage;
+export default IndividualOrderPage;

@@ -32,8 +32,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
-    street: '',
-    number: '',
     address: ''
   });
   const [customerInfo, setCustomerInfo] = useState({
@@ -154,15 +152,6 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
     }
   };
 
-  const handleAddressChange = (field: 'street' | 'number', value: string) => {
-    setDeliveryInfo(prev => {
-      const updated = { ...prev, [field]: value };
-      // Construire l'adresse complète
-      const fullAddress = `${updated.number} ${updated.street}, Marrakech`.trim();
-      return { ...updated, address: fullAddress };
-    });
-  };
-
   const generateWhatsAppMessage = () => {
     let message = `🏠 *COMMANDE PARTICULIER - THE ICE GUYS*\n\n`;
     
@@ -233,7 +222,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
           delivery_date: isExpressDelivery ? null : deliveryInfo.date,
           delivery_time: isExpressDelivery ? null : deliveryInfo.time,
           delivery_address: deliveryInfo.address,
-          delivery_coordinates: deliveryInfo.coordinates,
+          delivery_coordinates: deliveryInfo.coordinates || null,
           notes: customerInfo.notes || null,
           subtotal: calculateTotal() - (isExpressDelivery ? 100 : 0),
           delivery_fee: isExpressDelivery ? 100 : 0,
@@ -295,8 +284,7 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                        (item.quantities['10kg'] * item.iceType.price10kg) +
                        (item.quantities['20kg'] * item.iceType.price20kg)
           })),
-          delivery: {
-            coordinates: null,
+            delivery_coordinates: null,
             type: isExpressDelivery ? 'express' : 'standard',
             date: deliveryInfo.date,
             time: deliveryInfo.time,
@@ -625,33 +613,73 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
 
             {/* Address Selection */}
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Adresse de livraison</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Adresse de livraison</h3>
+                <button
+                  id="location-btn"
+                  onClick={getCurrentLocation}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Navigation className="h-4 w-4" />
+                  <span>Ma position</span>
+                </button>
+              </div>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Numéro *
-                    </label>
-                    <input
-                      type="text"
-                      value={deliveryInfo.number}
-                      onChange={(e) => handleAddressChange('number', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="123"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Rue *
-                    </label>
-                    <input
-                      type="text"
-                      value={deliveryInfo.street}
-                      onChange={(e) => handleAddressChange('street', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="Rue Mohammed V"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Adresse complète *
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryInfo.address}
+                    onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          const fallbackAddress = `Position: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}, Marrakech`;
+          setDeliveryInfo(prev => ({
+            ...prev,
+            address: fallbackAddress,
+            coordinates: [longitude, latitude]
+          }));
+        }
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        let errorMessage = 'Impossible d\'obtenir votre position.';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Accès à la localisation refusé. Veuillez autoriser la géolocalisation.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Position non disponible.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Délai d\'attente dépassé pour la géolocalisation.';
+            break;
+        }
+        
+        alert(errorMessage);
+        
+        // Reset button state
+        if (button) {
+          button.textContent = 'Ma position';
+          button.disabled = false;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
                 </div>
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -667,6 +695,11 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
                       <p className="text-sm text-blue-700 mt-2">
                         ✅ Zone de livraison couverte
                       </p>
+                      {deliveryInfo.coordinates && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          📍 Position GPS enregistrée
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -690,9 +723,9 @@ function IndividualOrderPage({ onBack }: IndividualOrderPageProps) {
               </button>
               <button
                 onClick={() => handleStepChange(3)}
-                disabled={!deliveryInfo.street || !deliveryInfo.number || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
+                disabled={!deliveryInfo.address || (!isExpressDelivery && (!deliveryInfo.date || !deliveryInfo.time))}
                 className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold transition-all ${
-                  (deliveryInfo.street && deliveryInfo.number && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
+                  (deliveryInfo.address && (isExpressDelivery || (deliveryInfo.date && deliveryInfo.time)))
                     ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg'
                     : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                 }`}
