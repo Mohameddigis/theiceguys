@@ -84,37 +84,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+  const loadOrders = async () => {
     try {
-      setUpdatingOrderStatus(orderId);
-      
-      // Mettre à jour le statut dans la base de données
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      // Recharger les commandes
-      await loadOrders();
-      
-      // Mettre à jour la commande sélectionnée si c'est celle-ci
-      if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
-      }
-
-      // Envoyer notification email au client
-      const order = orders.find(o => o.id === orderId);
-      if (order && order.customer) {
-        await sendStatusNotificationEmail(order, newStatus);
-      }
-
+      const ordersData = await orderService.getAllOrders();
+      setOrders(ordersData);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
-      alert('Erreur lors de la mise à jour du statut');
-    } finally {
-      setUpdatingOrderStatus(null);
+      console.error('Erreur lors du chargement des commandes:', error);
     }
   };
 
@@ -176,24 +151,35 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
-      setUpdatingStatus(orderId);
-      await orderService.updateOrderStatus(orderId, newStatus);
+      setUpdatingOrderStatus(orderId);
       
-      // Envoyer une notification email au client
+      // Mettre à jour le statut dans la base de données
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Recharger les commandes
+      await loadOrders();
+      
+      // Mettre à jour la commande sélectionnée si c'est celle-ci
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+
+      // Envoyer notification email au client
       const order = orders.find(o => o.id === orderId);
       if (order && order.customer) {
         await sendStatusNotificationEmail(order, newStatus);
       }
-      
-      await loadData();
-      // Si on est dans la vue détaillée, mettre à jour l'ordre sélectionné
-      if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
-      }
+
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
+      alert('Erreur lors de la mise à jour du statut');
     } finally {
-      setUpdatingStatus(null);
+      setUpdatingOrderStatus(null);
     }
   };
 
@@ -1036,15 +1022,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       </div>
     </div>
   );
-
-  const getIceTypeName = (iceType: string): string => {
-    switch (iceType) {
-      case 'nuggets': return "Nugget's";
-      case 'gourmet': return 'Gourmet';
-      case 'cubique': return 'Glace Paillette';
-      default: return iceType;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
