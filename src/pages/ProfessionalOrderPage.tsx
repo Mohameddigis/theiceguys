@@ -32,13 +32,25 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
   const [deliveryInfo, setDeliveryInfo] = useState({
     date: '',
     time: '',
+    address: '',
+    coordinates: null as [number, number] | null
   });
   const [customerInfo, setCustomerInfo] = useState({
+    companyName: '',
+    contactName: '',
     name: '',
     phone: '',
     email: '',
     notes: ''
   });
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Scroll to top when step changes
   const handleStepChange = (step: number) => {
@@ -165,7 +177,7 @@ function ProfessionalOrderPage({ onBack }: ProfessionalOrderPageProps) {
         try {
           // Try to get address from coordinates using reverse geocoding
           const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoidGhlaWNlZ3V5cyIsImEiOiJjbTRkZGNqZGcwMGNzMmtzZGNqZGNqZGNqIn0.example&country=ma&proximity=${longitude},${latitude}&types=address,poi`
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}&country=ma&proximity=${longitude},${latitude}&types=address,poi`
           );
           
           if (response.ok) {
