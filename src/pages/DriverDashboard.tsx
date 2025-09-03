@@ -1048,14 +1048,13 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             setSelectedOrderForModal(null);
           }}
           order={selectedOrderForModal}
-          driverId={driverId}
-          onSuccess={() => {
+          onConfirm={() => {
             loadOrders();
             loadDeliveredOrders();
             setShowModal(false);
             setSelectedOrderForModal(null);
           }}
-          mode={modalMode}
+          type={modalMode}
         />
       )}
     </div>
