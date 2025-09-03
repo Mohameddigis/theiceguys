@@ -605,6 +605,10 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       <p className="text-sm text-slate-600">
                         {selectedOrder.assigned_driver.phone} - 
                         <span className={`ml-1 px-2 py-1 rounded-full text-xs ${getDriverStatusColor(selectedOrder.assigned_driver.current_status)}`}>
+                          {getDriverStatusLabel(selectedOrder.assigned_driver.current_status)}
+                        </span>
+                      </p>
+                    )}
                       {selectedOrder.assigned_driver_id ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -622,7 +626,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       ) : (
                         <p className="text-slate-500 italic">Aucun livreur assigné</p>
                       )}
-                    )}
                   </div>
                   <button
                     onClick={() => setShowAssignDriver(selectedOrder)}
