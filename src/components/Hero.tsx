@@ -108,7 +108,7 @@ function Hero({ onOrderClick }: HeroProps) {
                 />
               </div>
               <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                Votre partenaire de confiance pour vos glaçons à <b>Marrakech.</b>
+                Votre partenaire de confiance pour vos glaçons à <b>Marrakech.</b><br></br>
                 Livraison rapide 7J/24H.
               </p>
             </div>
