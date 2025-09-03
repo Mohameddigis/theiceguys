@@ -716,11 +716,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Actions rapides</h3>
                     <div className="space-y-3">
                       <button
-                            : status === 'delivered'
-                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                            : status === 'cancelled'
-                            ? 'bg-red-600 hover:bg-red-700 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        onClick={() => handleDownloadPDF(selectedOrder)}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
                         <Download className="h-5 w-5" />
