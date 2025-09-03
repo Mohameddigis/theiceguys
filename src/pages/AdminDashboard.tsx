@@ -542,10 +542,10 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                 <div className="flex items-center space-x-3">
                                   <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                                     selectedOrder.delivery_type === 'express' 
-                                      ? 'bg-orange-100 text-orange-800' 
+                                      ? 'bg-red-100 text-red-800' 
                                       : 'bg-blue-100 text-blue-800'
                                   }`}>
-                                    {selectedOrder.delivery_type === 'express' ? '⚡ Express' : '📅 Standard'}
+                                    {selectedOrder.delivery_type === 'express' ? '🚨 URGENT' : '📅 Standard'}
                                   </div>
                                   <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
                                     {getStatusIcon(selectedOrder.status)}
@@ -659,8 +659,8 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                       {new Date(order.created_at).toLocaleDateString('fr-FR')}
                                     </p>
                                     {order.delivery_type === 'express' && (
-                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 mt-1">
-                                        ⚡ Express
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                        🚨 URGENT
                                       </span>
                                     )}
                                   </div>
