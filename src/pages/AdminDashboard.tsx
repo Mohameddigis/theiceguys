@@ -3,6 +3,11 @@ import * as LucideIcons from 'lucide-react';
 import { Order, DeliveryDriver, orderService, driverService, supabaseAdmin } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 
+const {
+  Package, Clock, CheckCircle, Truck, XCircle, User, Phone, Mail, MapPin, Calendar,
+  Download, AlertCircle, Shield, LogOut, RefreshCw, Users, Plus, Trash2, UserPlus
+} = LucideIcons;
+
 interface AdminDashboardProps {
   onBack: () => void;
 }
@@ -733,7 +738,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         onClick={() => handleDownloadPDF(selectedOrder)}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
-                        <LucideIcons.Edit className="h-3 w-3" />
+                        <Download className="h-5 w-5" />
                         <span>Télécharger bon de commande</span>
                       </button>
                     </div>
