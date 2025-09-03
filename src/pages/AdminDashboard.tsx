@@ -3,6 +3,11 @@ import * as LucideIcons from 'lucide-react';
 import { Order, DeliveryDriver, orderService, driverService, supabaseAdmin } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 
+const {
+  Package, User, Phone, Mail, MapPin, Calendar, Clock, CheckCircle, XCircle, Truck, 
+  Download, AlertCircle, Shield, LogOut, RefreshCw, Users, Plus, UserPlus, Trash2
+} = LucideIcons;
+
 interface AdminDashboardProps {
   onBack: () => void;
 }
@@ -266,13 +271,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
-      case 'pending': return <LucideIcons.Clock className="h-4 w-4" />;
-      case 'confirmed': return <LucideIcons.CheckCircle className="h-4 w-4" />;
-      case 'preparing': return <LucideIcons.Package className="h-4 w-4" />;
-      case 'delivering': return <LucideIcons.Truck className="h-4 w-4" />;
-      case 'delivered': return <LucideIcons.CheckCircle className="h-4 w-4" />;
-      case 'cancelled': return <LucideIcons.XCircle className="h-4 w-4" />;
-      default: return <LucideIcons.Clock className="h-4 w-4" />;
+      case 'pending': return <Clock className="h-4 w-4" />;
+      case 'confirmed': return <CheckCircle className="h-4 w-4" />;
+      case 'preparing': return <Package className="h-4 w-4" />;
+      case 'delivering': return <Truck className="h-4 w-4" />;
+      case 'delivered': return <CheckCircle className="h-4 w-4" />;
+      case 'cancelled': return <XCircle className="h-4 w-4" />;
+      default: return <Clock className="h-4 w-4" />;
     }
   };
 
@@ -347,7 +352,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               onClick={() => setShowAssignDriver(null)}
               className="text-slate-400 hover:text-slate-600"
             >
-              <LucideIcons.XCircle className="h-6 w-6" />
+              <XCircle className="h-6 w-6" />
             </button>
           </div>
 
@@ -369,7 +374,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             <h4 className="font-semibold text-slate-900">Livreurs disponibles :</h4>
             {drivers.filter(d => d.is_active && d.current_status === 'available').length === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                <LucideIcons.Truck className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+                <Truck className="h-12 w-12 mx-auto mb-2 text-slate-300" />
                 <p>Aucun livreur disponible</p>
                 <p className="text-sm">Tous les livreurs sont occupés ou hors ligne</p>
               </div>
@@ -392,7 +397,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </div>
                       </div>
                       <div className="text-green-600">
-                        <LucideIcons.Truck className="h-5 w-5" />
+                        <Truck className="h-5 w-5" />
                       </div>
                     </div>
                   </button>
@@ -426,7 +431,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               onClick={() => setShowCreateDriver(false)}
               className="text-slate-400 hover:text-slate-600"
             >
-              <LucideIcons.XCircle className="h-6 w-6" />
+              <XCircle className="h-6 w-6" />
             </button>
           </div>
 
@@ -522,7 +527,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 }}
                 className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
               >
-                <LucideIcons.Package className="h-5 w-5 rotate-180" />
+                <Package className="h-5 w-5 rotate-180" />
                 <span>Retour aux commandes</span>
               </button>
               
@@ -563,7 +568,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               {/* Actions admin */}
               <div className="mb-8 p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
-                  <LucideIcons.Package className="h-5 w-5 mr-2 text-blue-600" />
+                  <Package className="h-5 w-5 mr-2 text-blue-600" />
                   Actions administrateur :
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -583,7 +588,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       {updatingStatus === selectedOrder.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                       ) : (
-                        <LucideIcons.Clock className="h-4 w-4" />
+                        getStatusIcon(status)
                       )}
                       <span>{getStatusLabel(status)}</span>
                     </button>
@@ -609,7 +614,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                     onClick={() => setShowAssignDriver(selectedOrder)}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2"
                   >
-                    <LucideIcons.UserPlus className="h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                     <span>{selectedOrder.assigned_driver ? 'Changer' : 'Assigner'}</span>
                   </button>
                 </div>
@@ -620,7 +625,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 <div className="space-y-6">
                   <div className="bg-slate-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                      <LucideIcons.User className="h-5 w-5 mr-2 text-blue-600" />
+                      <User className="h-5 w-5 mr-2 text-blue-600" />
                       Informations client
                     </h3>
                     <div className="space-y-4">
@@ -634,7 +639,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </p>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <LucideIcons.Phone className="h-5 w-5 text-green-600" />
+                        <Phone className="h-5 w-5 text-green-600" />
                         <a 
                           href={`tel:${selectedOrder.customer?.phone}`} 
                           className="text-green-600 hover:text-green-700 font-medium text-lg"
@@ -643,7 +648,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </a>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <LucideIcons.Mail className="h-5 w-5 text-blue-600" />
+                        <Mail className="h-5 w-5 text-blue-600" />
                         <a 
                           href={`mailto:${selectedOrder.customer?.email}`} 
                           className="text-blue-600 hover:text-blue-700"
@@ -657,7 +662,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   {/* Articles commandés */}
                   <div className="bg-slate-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                      <LucideIcons.Package className="h-5 w-5 mr-2 text-blue-600" />
+                      <Package className="h-5 w-5 mr-2 text-blue-600" />
                       Articles commandés
                     </h3>
                     <div className="space-y-3">
@@ -683,7 +688,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 <div className="space-y-6">
                   <div className="bg-slate-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                      <LucideIcons.Truck className="h-5 w-5 mr-2 text-orange-600" />
+                      <Truck className="h-5 w-5 mr-2 text-orange-600" />
                       Informations de livraison
                     </h3>
                     <div className="space-y-4">
@@ -705,7 +710,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       ) : (
                         selectedOrder.delivery_date && (
                           <div className="flex items-center space-x-3">
-                            <LucideIcons.Calendar className="h-5 w-5 text-slate-400" />
+                            <Calendar className="h-5 w-5 text-slate-400" />
                             <div>
                               <p className="font-medium">{selectedOrder.delivery_date}</p>
                               <p className="text-sm text-slate-600">{selectedOrder.delivery_time}</p>
@@ -716,7 +721,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
                       <div className="bg-white rounded-lg p-4 border border-slate-200">
                         <div className="flex items-start space-x-3">
-                          <LucideIcons.MapPin className="h-5 w-5 text-red-500 mt-0.5" />
+                          <MapPin className="h-5 w-5 text-red-500 mt-0.5" />
                           <div>
                             <p className="font-medium text-slate-900">{selectedOrder.delivery_address}</p>
                           </div>
@@ -733,7 +738,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         onClick={() => handleDownloadPDF(selectedOrder)}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
-                        <LucideIcons.Download className="h-5 w-5" />
+                        <Download className="h-5 w-5" />
                         <span>Télécharger bon de commande</span>
                       </button>
                     </div>
@@ -745,7 +750,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               {selectedOrder.notes && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <h4 className="font-medium text-slate-900 mb-2 flex items-center">
-                    <LucideIcons.AlertCircle className="h-4 w-4 mr-2 text-blue-600" />
+                    <AlertCircle className="h-4 w-4 mr-2 text-blue-600" />
                     Notes spéciales du client :
                   </h4>
                   <p className="text-slate-700">{selectedOrder.notes}</p>
@@ -777,7 +782,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
           {/* Logo/Header */}
           <div className="flex items-center space-x-3 mb-8">
             <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full w-10 h-10 flex items-center justify-center">
-              <LucideIcons.Shield className="h-6 w-6 text-white" />
+              <Shield className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-900">Administration</h1>
@@ -795,7 +800,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              <LucideIcons.Package className="h-5 w-5" />
+              <Package className="h-5 w-5" />
               <span>Commandes</span>
               <span className={`ml-auto px-2 py-1 rounded-full text-xs font-bold ${
                 activeTab === 'orders'
@@ -814,7 +819,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              <LucideIcons.Truck className="h-5 w-5" />
+              <Truck className="h-5 w-5" />
               <span>Livreurs</span>
               <span className={`ml-auto px-2 py-1 rounded-full text-xs font-bold ${
                 activeTab === 'drivers'
@@ -832,7 +837,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               onClick={onBack}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-medium transition-colors"
             >
-              <LucideIcons.LogOut className="h-5 w-5" />
+              <LogOut className="h-5 w-5" />
               <span>Déconnexion</span>
             </button>
           </div>
@@ -862,7 +867,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 disabled={loading}
                 className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
               >
-                <LucideIcons.RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Actualiser</span>
               </button>
             </div>
@@ -880,7 +885,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Total</p>
                   <p className="text-2xl font-bold text-slate-900">{orderStats.total}</p>
                 </div>
-                <LucideIcons.Package className="h-8 w-8 text-blue-600" />
+                <Package className="h-8 w-8 text-blue-600" />
               </div>
             </div>
             
@@ -890,7 +895,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">En attente</p>
                   <p className="text-2xl font-bold text-yellow-600">{orderStats.pending}</p>
                 </div>
-                <LucideIcons.Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-8 w-8 text-yellow-600" />
               </div>
             </div>
             
@@ -900,7 +905,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Confirmées</p>
                   <p className="text-2xl font-bold text-blue-600">{orderStats.confirmed}</p>
                 </div>
-                <LucideIcons.CheckCircle className="h-8 w-8 text-blue-600" />
+                <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
             </div>
             
@@ -910,7 +915,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">En livraison</p>
                   <p className="text-2xl font-bold text-orange-600">{orderStats.delivering}</p>
                 </div>
-                <LucideIcons.Truck className="h-8 w-8 text-orange-600" />
+                <Truck className="h-8 w-8 text-orange-600" />
               </div>
             </div>
             
@@ -920,7 +925,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Livrées</p>
                   <p className="text-2xl font-bold text-green-600">{orderStats.delivered}</p>
                 </div>
-                <LucideIcons.CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </div>
             
@@ -942,7 +947,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Total</p>
                   <p className="text-2xl font-bold text-slate-900">{driverStats.total}</p>
                 </div>
-                <LucideIcons.Users className="h-8 w-8 text-blue-600" />
+                <Users className="h-8 w-8 text-blue-600" />
               </div>
             </div>
             
@@ -952,7 +957,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Actifs</p>
                   <p className="text-2xl font-bold text-green-600">{driverStats.active}</p>
                 </div>
-                <LucideIcons.CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </div>
             
@@ -962,7 +967,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Disponibles</p>
                   <p className="text-2xl font-bold text-green-600">{driverStats.available}</p>
                 </div>
-                <LucideIcons.Truck className="h-8 w-8 text-green-600" />
+                <Truck className="h-8 w-8 text-green-600" />
               </div>
             </div>
             
@@ -972,7 +977,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <p className="text-sm text-slate-600">Occupés</p>
                   <p className="text-2xl font-bold text-orange-600">{driverStats.busy}</p>
                 </div>
-                <LucideIcons.Clock className="h-8 w-8 text-orange-600" />
+                <Clock className="h-8 w-8 text-orange-600" />
               </div>
             </div>
           </div>
@@ -995,7 +1000,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               </div>
             ) : orders.length === 0 ? (
               <div className="p-8 text-center text-slate-500">
-                <LucideIcons.Package className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                <Package className="h-12 w-12 mx-auto mb-4 text-slate-300" />
                 <p className="text-lg font-medium">Aucune commande</p>
                 <p className="text-sm">Les nouvelles commandes apparaîtront ici</p>
               </div>
@@ -1021,21 +1026,21 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                           <div className="bg-slate-50 rounded-lg p-3">
                             <p className="font-medium text-slate-900 flex items-center">
-                              <LucideIcons.User className="h-4 w-4 mr-1" />
+                              <User className="h-4 w-4 mr-1" />
                               {order.customer?.name}
                             </p>
                             {order.customer?.contact_name && (
                               <p className="text-slate-600">Contact: {order.customer.contact_name}</p>
                             )}
                             <p className="text-slate-600 flex items-center mt-1">
-                              <LucideIcons.Phone className="h-3 w-3 mr-1" />
+                              <Phone className="h-3 w-3 mr-1" />
                               {order.customer?.phone}
                             </p>
                           </div>
                           
                           <div className="bg-slate-50 rounded-lg p-3">
                             <p className="font-medium text-slate-900 flex items-center">
-                              <LucideIcons.Truck className="h-4 w-4 mr-1" />
+                              <Truck className="h-4 w-4 mr-1" />
                               Livreur
                             </p>
                             {order.assigned_driver ? (
@@ -1052,7 +1057,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                           
                           <div className="bg-slate-50 rounded-lg p-3">
                             <p className="font-medium text-slate-900 flex items-center">
-                              <LucideIcons.Clock className="h-4 w-4 mr-1" />
+                              <Clock className="h-4 w-4 mr-1" />
                               Livraison
                             </p>
                             {order.delivery_date ? (
@@ -1070,7 +1075,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         
                         <div className="mt-3 bg-blue-50 rounded-lg p-3">
                           <p className="text-sm text-slate-700 flex items-start space-x-2">
-                            <LucideIcons.MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
+                            <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
                             <span>{order.delivery_address}</span>
                           </p>
                         </div>
@@ -1092,7 +1097,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             onClick={() => setShowAssignDriver(order)}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
                           >
-                            <LucideIcons.UserPlus className="h-3 w-3" />
+                            <UserPlus className="h-3 w-3" />
                             <span>Assigner</span>
                           </button>
                         )}
@@ -1106,7 +1111,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             {updatingStatus === order.id ? (
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                             ) : (
-                              <LucideIcons.Truck className="h-3 w-3" />
+                              <Truck className="h-3 w-3" />
                             )}
                             <span>Démarrer</span>
                           </button>
@@ -1129,7 +1134,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 onClick={() => setShowCreateDriver(true)}
                 className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
-                <LucideIcons.Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 <span>Nouveau livreur</span>
               </button>
             </div>
@@ -1141,7 +1146,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               </div>
             ) : drivers.length === 0 ? (
               <div className="p-8 text-center text-slate-500">
-                <LucideIcons.Users className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                <Users className="h-12 w-12 mx-auto mb-4 text-slate-300" />
                 <p className="text-lg font-medium">Aucun livreur</p>
                 <p className="text-sm mb-4">Créez votre premier livreur pour commencer</p>
                 <button
@@ -1175,7 +1180,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900 flex items-center">
-                                <LucideIcons.Phone className="h-4 w-4 mr-1" />
+                                <Phone className="h-4 w-4 mr-1" />
                                 Contact
                               </p>
                               <p className="text-slate-600">{driver.phone}</p>
@@ -1184,7 +1189,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900 flex items-center">
-                                <LucideIcons.Package className="h-4 w-4 mr-1" />
+                                <Package className="h-4 w-4 mr-1" />
                                 Commandes actives
                               </p>
                               <p className="text-orange-600 font-bold text-lg">{assignedOrders.length}</p>
@@ -1218,7 +1223,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             onClick={() => deleteDriver(driver.id, driver.name)}
                             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1"
                           >
-                            <LucideIcons.Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" />
                             <span>Supprimer</span>
                           </button>
                         </div>
