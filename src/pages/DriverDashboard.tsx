@@ -1050,9 +1050,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
-                              <p className="text-slate-600">
-                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
-                              </p>
+                              <p className="text-slate-600">{new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}</p>
                             </div>
                             
                             <div className="bg-slate-50 rounded-lg p-3">
