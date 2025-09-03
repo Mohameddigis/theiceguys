@@ -553,69 +553,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                   </div>
                                 </div>
                                 
-                               {/* Actions de statut rapides */}
-                               <div className="flex space-x-1">
-                                 {order.status === 'pending' && (
-                                   <button
-                                     onClick={() => updateOrderStatus(order.id, 'confirmed')}
-                                     disabled={updatingStatus === order.id}
-                                     className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
-                                   >
-                                     {updatingStatus === order.id ? (
-                                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                     ) : (
-                                       <CheckCircle className="h-3 w-3" />
-                                     )}
-                                     <span>Confirmer</span>
-                                   </button>
-                                 )}
-                                 
-                                 {order.status === 'confirmed' && (
-                                   <button
-                                     onClick={() => updateOrderStatus(order.id, 'delivering')}
-                                     disabled={updatingStatus === order.id}
-                                     className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
-                                   >
-                                     {updatingStatus === order.id ? (
-                                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                     ) : (
-                                       <Truck className="h-3 w-3" />
-                                     )}
-                                     <span>En livraison</span>
-                                   </button>
-                                 )}
-                                 
-                                 {order.status === 'delivering' && (
-                                   <button
-                                     onClick={() => updateOrderStatus(order.id, 'delivered')}
-                                     disabled={updatingStatus === order.id}
-                                     className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
-                                   >
-                                     {updatingStatus === order.id ? (
-                                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                     ) : (
-                                       <CheckCircle className="h-3 w-3" />
-                                     )}
-                                     <span>Livrée</span>
-                                   </button>
-                                 )}
-                                 
-                                 {['pending', 'confirmed', 'delivering'].includes(order.status) && (
-                                   <button
-                                     onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                                     disabled={updatingStatus === order.id}
-                                     className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
-                                   >
-                                     {updatingStatus === order.id ? (
-                                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                     ) : (
-                                       <XCircle className="h-3 w-3" />
-                                     )}
-                                     <span>Annuler</span>
-                                   </button>
-                                 )}
-                               </div>
-                               
                                 {selectedOrder.delivery_date && (
                                   <div className="flex items-center space-x-3">
                                     <Calendar className="h-4 w-4 text-slate-400" />
