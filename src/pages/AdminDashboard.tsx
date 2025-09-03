@@ -1212,7 +1212,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                   {drivers.filter(d => d.is_active).map(driver => (
                                     <option key={driver.id} value={driver.id}>
                                       {driver.name} ({driver.current_status})
-                                    </option>
+                                    <option key={driver.id} value={driver.id}>{driver.name}</option>
                                   ))}
                                 </select>
                               </div>
