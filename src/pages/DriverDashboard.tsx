@@ -976,4 +976,4 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                           )}
                           <div className="flex items-start space-x-2">
                             <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
-                            <span className="text-slate-700 text-sm">{order.delivery
+                            <span className="text-slate-700 text-sm">{order.delivery_address}</span>
