@@ -977,3 +977,167 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                           <div className="flex items-start space-x-2">
                             <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
                             <span className="text-slate-700 text-sm">{order.delivery_address}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions rapides */}
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateOrderStatus(order.id, 'delivering');
+                            }}
+                            disabled={order.status === 'delivering' || updatingStatus === order.id}
+                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1 ${
+                              order.status === 'delivering'
+                                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                : 'bg-orange-600 hover:bg-orange-700 text-white'
+                            }`}
+                          >
+                            <Truck className="h-3 w-3" />
+                            <span>En livraison</span>
+                          </button>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateOrderStatus(order.id, 'delivered');
+                            }}
+                            disabled={order.status === 'delivered' || updatingStatus === order.id}
+                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1 ${
+                              order.status === 'delivered'
+                                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
+                            }`}
+                          >
+                            <CheckCircle className="h-3 w-3" />
+                            <span>Livrée</span>
+                          </button>
+                          
+                          <a
+                            href={`tel:${order.customer?.phone}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-3 py-1 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex items-center space-x-1"
+                          >
+                            <Phone className="h-3 w-3" />
+                            <span>Appeler</span>
+                          </a>
+                          
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-3 py-1 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center space-x-1"
+                          >
+                            <Navigation className="h-3 w-3" />
+                            <span>GPS</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {deliveredOrders.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                <Archive className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Aucune livraison effectuée</h3>
+                <p className="text-slate-600">Vos livraisons terminées apparaîtront ici.</p>
+              </div>
+            ) : (
+              deliveredOrders.map((order) => (
+                <div 
+                  key={order.id} 
+                  className="bg-white rounded-xl shadow-lg border border-slate-200 transition-all duration-300 hover:shadow-xl cursor-pointer"
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setTimeout(scrollToTop, 100);
+                  }}
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900">{order.order_number}</h3>
+                          <div className="flex items-center space-x-2">
+                            <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                              <CheckCircle className="h-3 w-3 inline mr-1" />
+                              Livrée
+                            </div>
+                            {order.delivery_type === 'express' && (
+                              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                                ⚡ EXPRESS
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-green-600">{order.total} MAD</div>
+                        <div className="text-xs text-slate-500">
+                          Livrée le {order.delivered_at ? new Date(order.delivered_at).toLocaleDateString('fr-FR') : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4 text-slate-400" />
+                          <span className="font-medium text-slate-900">{order.customer?.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Phone className="h-4 w-4 text-green-600" />
+                          <span className="text-slate-700">{order.customer?.phone}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-4 w-4 text-slate-400" />
+                          <span className="text-slate-700">
+                            {order.delivered_at ? new Date(order.delivered_at).toLocaleTimeString('fr-FR') : 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
+                          <span className="text-slate-700 text-sm">{order.delivery_address}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de livraison/annulation */}
+      {showModal && selectedOrderForModal && (
+        <DeliveryModal
+          order={selectedOrderForModal}
+          mode={modalMode}
+          onConfirm={modalMode === 'deliver' ? handleDeliveryConfirmation : handleCancellationConfirmation}
+          onCancel={() => {
+            setShowModal(false);
+            setSelectedOrderForModal(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default DriverDashboard;
