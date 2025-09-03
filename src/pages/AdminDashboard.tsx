@@ -1212,8 +1212,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                   {drivers.filter(d => d.is_active).map(driver => (
                                     <option key={driver.id} value={driver.id}>
                                       {driver.name} ({driver.current_status})
-                                    <option key={driver.id} value={driver.id}>
-                                      {driver.name}
                                     </option>
                                   ))}
                                 </select>
@@ -1720,14 +1718,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          {driverAssignments.reduce((acc, assignment) => {
-                            const driverName = assignment.driver?.name || 'Livreur inconnu';
-                            if (!acc[driverName]) {
-                              acc[driverName] = [];
-                            }
-                            acc[driverName].push(assignment);
-                            return acc;
-                          }, {} as Record<string, DriverStockAssignment[]>)}
                           {Object.entries(
                             driverAssignments.reduce((acc, assignment) => {
                               const driverName = assignment.driver?.name || 'Livreur inconnu';
