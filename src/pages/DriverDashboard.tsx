@@ -472,7 +472,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     total: orders.length,
     express: expressOrders.length,
     delivering: orders.filter(o => o.status === 'delivering').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length
+    confirmed: orders.filter(o => o.status === 'confirmed').length,
+    critical: orders.filter(o => getOrderUrgency(o).level === 'critical').length
   };
 
   if (selectedOrder) {
@@ -1013,14 +1014,14 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             <>
               <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
                 <h2 className="text-lg font-semibold text-slate-900">
-                  Mes livraisons effectuées ({deliveredOrders.length})
+                  Mes livraisons récentes ({deliveredOrders.length})
                 </h2>
               </div>
               
               {deliveredOrders.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   <Archive className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                  <p className="text-lg font-medium">Aucune livraison effectuée</p>
+                  <p className="text-lg font-medium">Aucune livraison récente</p>
                   <p className="text-sm">Vos livraisons terminées apparaîtront ici</p>
                 </div>
               ) : (
@@ -1035,9 +1036,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                               <CheckCircle className="h-3 w-3" />
                               <span>Livrée</span>
                             </div>
-                            {order.delivery_type === 'express' && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                ⚡ EXPRESS
+                            {order.has_reception && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                📋 Réception
                               </span>
                             )}
                           </div>
@@ -1050,7 +1051,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
-                              <p className="text-slate-600">{new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}</p>
+                              <p className="text-slate-600">
+                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à{' '}
+                                {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
+                              </p>
                             </div>
                             
                             <div className="bg-slate-50 rounded-lg p-3">
@@ -1081,12 +1085,24 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
         </div>
 
         {/* Message d'encouragement */}
-        {orders.length > 0 && (
+        {activeTab === 'active' && orders.length > 0 && (
           <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
-            <h3 className="text-xl font-bold mb-2">Excellente journée de livraison ! 🚚</h3>
+            <h3 className="text-xl font-bold mb-2">
+              {stats.critical > 0 ? '🚨 Commandes urgentes à traiter !' : 'Excellente journée de livraison ! 🚚'}
+            </h3>
             <p className="text-green-100">
-              Vous avez {orders.length} commande(s) à livrer. 
-              {stats.express > 0 && ` Attention aux ${stats.express} commande(s) express !`}
+              {stats.critical > 0 && `⚠️ ${stats.critical} commande(s) critique(s) - `}
+              {stats.express > 0 && `⚡ ${stats.express} express - `}
+              {orders.length} commande(s) au total
+            </p>
+          </div>
+        )}
+        
+        {activeTab === 'delivered' && deliveredOrders.length > 0 && (
+          <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
+            <h3 className="text-xl font-bold mb-2">Bravo ! 🎉</h3>
+            <p className="text-green-100">
+              Vous avez effectué {deliveredOrders.length} livraison(s) récemment. Excellent travail !
             </p>
           </div>
         )}
