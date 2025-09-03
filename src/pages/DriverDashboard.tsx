@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation, User, Calendar, AlertCircle } from 'lucide-react';
+import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation, User, Calendar, AlertCircle, Archive, Activity } from 'lucide-react';
 import { Order, driverService, supabase } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 import DeliveryReceptionModal from '../components/DeliveryReceptionModal';
@@ -20,6 +20,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [driverStatus, setDriverStatus] = useState<'offline' | 'available' | 'busy' | 'on_break'>('available');
   const [showReceptionModal, setShowReceptionModal] = useState(false);
   const [processingReception, setProcessingReception] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'delivered'>('active');
+  const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -32,21 +34,131 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   useEffect(() => {
     loadOrders();
+    loadDeliveredOrders();
     loadDriverStatus();
     // Actualiser toutes les 30 secondes
-    const interval = setInterval(loadOrders, 30000);
+    const interval = setInterval(() => {
+      loadOrders();
+      if (activeTab === 'delivered') {
+        loadDeliveredOrders();
+      }
+    }, 30000);
     return () => clearInterval(interval);
-  }, [driverId]);
+  }, [driverId, activeTab]);
 
   const loadOrders = async () => {
     try {
       setLoading(true);
       const driverOrders = await driverService.getDriverOrders(driverId);
-      setOrders(driverOrders);
+      // Trier par priorité et urgence
+      const sortedOrders = sortOrdersByPriority(driverOrders);
+      setOrders(sortedOrders);
     } catch (error) {
       console.error('Erreur lors du chargement des commandes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDeliveredOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          customer:customers(*),
+          order_items(*),
+          assigned_driver:delivery_drivers(*)
+        `)
+        .eq('assigned_driver_id', driverId)
+        .eq('status', 'delivered')
+        .order('updated_at', { ascending: false })
+        .limit(20); // Limiter aux 20 dernières livraisons
+
+      if (error) throw error;
+      setDeliveredOrders(data || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des commandes livrées:', error);
+    }
+  };
+
+  // Fonction de tri par priorité et urgence
+  const sortOrdersByPriority = (orders: Order[]): Order[] => {
+    return orders.sort((a, b) => {
+      // 1. Priorité absolue : commandes en livraison
+      if (a.status === 'delivering' && b.status !== 'delivering') return -1;
+      if (b.status === 'delivering' && a.status !== 'delivering') return 1;
+      
+      // 2. Priorité express
+      if (a.delivery_type === 'express' && b.delivery_type !== 'express') return -1;
+      if (b.delivery_type === 'express' && a.delivery_type !== 'express') return 1;
+      
+      // 3. Pour les commandes express : par heure de création (plus ancien en premier)
+      if (a.delivery_type === 'express' && b.delivery_type === 'express') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      
+      // 4. Pour les commandes standard : par date/heure de livraison prévue
+      if (a.delivery_date && b.delivery_date) {
+        const dateA = new Date(`${a.delivery_date} ${a.delivery_time || '00:00'}`);
+        const dateB = new Date(`${b.delivery_date} ${b.delivery_time || '00:00'}`);
+        
+        // Commandes du jour en premier
+        const today = new Date().toISOString().split('T')[0];
+        const isAToday = a.delivery_date === today;
+        const isBToday = b.delivery_date === today;
+        
+        if (isAToday && !isBToday) return -1;
+        if (isBToday && !isAToday) return 1;
+        
+        return dateA.getTime() - dateB.getTime();
+      }
+      
+      // 5. Fallback : par heure de création
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+  };
+
+  // Calculer l'urgence d'une commande
+  const getOrderUrgency = (order: Order): { level: 'critical' | 'high' | 'medium' | 'low', message: string } => {
+    const now = new Date();
+    
+    if (order.delivery_type === 'express') {
+      const createdAt = new Date(order.created_at);
+      const minutesSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 60);
+      
+      if (minutesSinceCreated > 45) {
+        return { level: 'critical', message: 'URGENT - Délai dépassé !' };
+      } else if (minutesSinceCreated > 30) {
+        return { level: 'high', message: 'Très urgent - Moins de 30min' };
+      } else {
+        return { level: 'medium', message: 'Express - Moins de 1H' };
+      }
+    }
+    
+    if (order.delivery_date) {
+      const deliveryDateTime = new Date(`${order.delivery_date} ${order.delivery_time || '00:00'}`);
+      const hoursUntilDelivery = (deliveryDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursUntilDelivery < 0) {
+        return { level: 'critical', message: 'RETARD - Livraison prévue dépassée' };
+      } else if (hoursUntilDelivery < 2) {
+        return { level: 'high', message: 'Urgent - Moins de 2H' };
+      } else if (hoursUntilDelivery < 6) {
+        return { level: 'medium', message: 'Bientôt - Moins de 6H' };
+      }
+    }
+    
+    return { level: 'low', message: 'Normal' };
+  };
+
+  const getUrgencyColor = (level: string) => {
+    switch (level) {
+      case 'critical': return 'bg-red-100 text-red-800 border-red-300';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'low': return 'bg-green-100 text-green-800 border-green-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -101,6 +213,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
       
       // Recharger les commandes
       await loadOrders();
+      if (activeTab === 'delivered') {
+        await loadDeliveredOrders();
+      }
       
       // Mettre à jour la commande sélectionnée si c'est celle-ci
       if (selectedOrder && selectedOrder.id === orderId) {
@@ -190,6 +305,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
       // 9. Recharger les commandes et fermer le modal
       await loadOrders();
+      await loadDeliveredOrders();
       setShowReceptionModal(false);
       setSelectedOrder(null);
       
@@ -655,9 +771,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                 onClick={loadOrders}
                 disabled={loading}
                 className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                title="Actualiser les commandes"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                <span>Actualiser</span>
+                <span className="hidden sm:inline">Actualiser</span>
               </button>
               
               <button
@@ -674,14 +791,14 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Statistiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total</p>
+                <p className="text-sm text-slate-600">Actives</p>
                 <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
               </div>
-              <Package className="h-8 w-8 text-green-600" />
+              <Activity className="h-8 w-8 text-green-600" />
             </div>
           </div>
           
@@ -708,152 +825,176 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">En livraison</p>
+                <p className="text-sm text-slate-600">En cours</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.delivering}</p>
               </div>
               <Truck className="h-8 w-8 text-orange-600" />
             </div>
           </div>
-        </div>
-
-        {/* Liste des commandes */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Mes commandes assignées ({orders.length})
-              </h2>
-              {stats.express > 0 && (
-                <div className="flex items-center space-x-2 text-orange-600">
-                  <AlertCircle className="h-5 w-5" />
-                  <span className="text-sm font-medium">
-                    {stats.express} commande(s) express en priorité
-                  </span>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-slate-600">Livrées</p>
+                <p className="text-2xl font-bold text-green-600">{deliveredOrders.length}</p>
+              </div>
+              <Archive className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-2 text-slate-600">Chargement des commandes...</p>
-            </div>
-          ) : sortedOrders.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              <Truck className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-              <p className="text-lg font-medium">Aucune commande assignée</p>
-              <p className="text-sm">Les nouvelles commandes apparaîtront ici automatiquement</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-200">
-              {sortedOrders.map((order) => (
-                <div key={order.id} className="p-6 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <h3 className="font-semibold text-slate-900 text-lg">{order.order_number}</h3>
-                        {order.delivery_type === 'express' && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
-                            ⚡ EXPRESS - PRIORITÉ
-                          </span>
-                        )}
-                        <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs border font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span>{getStatusLabel(order.status)}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div className="bg-slate-50 rounded-lg p-3">
-                          <p className="font-medium text-slate-900 flex items-center">
-                            <User className="h-4 w-4 mr-1" />
-                            {order.customer?.name}
-                          </p>
-                          {order.customer?.contact_name && (
-                            <p className="text-slate-600">Contact: {order.customer.contact_name}</p>
-                          )}
-                          <p className="text-slate-600 flex items-center mt-1">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {order.customer?.phone}
-                          </p>
-                        </div>
-                        
-                        <div className="bg-slate-50 rounded-lg p-3">
-                          <p className="font-medium text-slate-900 flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            Livraison
-                          </p>
-                          {order.delivery_date ? (
-                            <p className="text-slate-600">{order.delivery_date} à {order.delivery_time}</p>
-                          ) : (
-                            <p className="text-orange-600 font-medium">Dès que possible</p>
-                          )}
-                        </div>
-                        
-                        <div className="bg-slate-50 rounded-lg p-3">
-                          <p className="font-medium text-slate-900">Total</p>
-                          <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 bg-blue-50 rounded-lg p-3">
-                        <p className="text-sm text-slate-700 flex items-start space-x-2">
-                          <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
-                          <span>{order.delivery_address}</span>
-                        </p>
-                      </div>
+        </div>
+
+        {/* Onglets */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+          <div className="flex border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`flex-1 px-6 py-4 font-medium transition-colors flex items-center justify-center space-x-2 ${
+                activeTab === 'active'
+                  ? 'bg-green-50 text-green-700 border-b-2 border-green-500'
+                  : 'text-slate-600 hover:text-green-600 hover:bg-slate-50'
+              }`}
+            >
+              <Activity className="h-5 w-5" />
+              <span>Commandes Actives ({orders.length})</span>
+              {stats.express > 0 && (
+                <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                  {stats.express} express
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('delivered')}
+              className={`flex-1 px-6 py-4 font-medium transition-colors flex items-center justify-center space-x-2 ${
+                activeTab === 'delivered'
+                  ? 'bg-green-50 text-green-700 border-b-2 border-green-500'
+                  : 'text-slate-600 hover:text-green-600 hover:bg-slate-50'
+              }`}
+            >
+              <Archive className="h-5 w-5" />
+              <span>Mes Livraisons ({deliveredOrders.length})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu des onglets */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {activeTab === 'active' ? (
+            <>
+              <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Commandes à livrer ({orders.length})
+                  </h2>
+                  {stats.express > 0 && (
+                    <div className="flex items-center space-x-2 text-orange-600">
+                      <AlertCircle className="h-5 w-5" />
+                      <span className="text-sm font-medium">
+                        {stats.express} express en priorité
+                      </span>
                     </div>
-                    
-                    <div className="flex flex-col space-y-2 ml-4">
-                      <button
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setTimeout(scrollToTop, 100);
-                        }}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Voir détails
-                      </button>
-                      
-                      {order.status === 'confirmed' && (
-                        <button
-                          onClick={() => updateOrderStatus(order.id, 'delivering')}
-                          disabled={updatingStatus === order.id}
-                          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
-                        >
-                          {updatingStatus === order.id ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                          ) : (
-                            <Truck className="h-3 w-3" />
-                          )}
-                          <span>Démarrer</span>
-                        </button>
-                      )}
-                      
-                      {order.status === 'delivering' && (
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            updateOrderStatus(order.id, 'delivered');
-                          }}
-                          disabled={updatingStatus === order.id}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
-                        >
-                          {updatingStatus === order.id ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                          ) : (
-                            <CheckCircle className="h-3 w-3" />
-                          )}
-                          <span>Livré</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+              
+              {loading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                  <p className="mt-2 text-slate-600">Chargement des commandes...</p>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="p-8 text-center text-slate-500">
+                  <Truck className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                  <p className="text-lg font-medium">Aucune commande assignée</p>
+                  <p className="text-sm">Les nouvelles commandes apparaîtront ici automatiquement</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-200">
+                  {orders.map((order) => {
+                    const urgency = getOrderUrgency(order);
+                    return (
+                      <div key={order.id} className="p-6 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-3">
+                              <h3 className="font-semibold text-slate-900 text-lg">{order.order_number}</h3>
+                              
+                              {/* Badge d'urgence */}
+                              <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs border font-medium ${getUrgencyColor(urgency.level)}`}>
+                                <span>{urgency.message}</span>
+                              </div>
+                              
+                              {order.delivery_type === 'express' && (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200 animate-pulse">
+                                  ⚡ EXPRESS
+                                </span>
+                              )}
+                              
+                              <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs border font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusIcon(order.status)}
+                                <span>{getStatusLabel(order.status)}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                              <div className="bg-slate-50 rounded-lg p-3">
+                                <p className="font-medium text-slate-900 flex items-center">
+                                  <User className="h-4 w-4 mr-1" />
+                                  {order.customer?.name}
+                                </p>
+                                {order.customer?.contact_name && (
+                                  <p className="text-slate-600">Contact: {order.customer.contact_name}</p>
+                                )}
+                                <p className="text-slate-600 flex items-center mt-1">
+                                  <Phone className="h-3 w-3 mr-1" />
+                                  {order.customer?.phone}
+                                </p>
+                              </div>
+                              
+                              <div className="bg-slate-50 rounded-lg p-3">
+                                <p className="font-medium text-slate-900 flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Livraison
+                                </p>
+                                {order.delivery_date ? (
+                                  <p className="text-slate-600">{order.delivery_date} à {order.delivery_time}</p>
+                                ) : (
+                                  <p className="text-orange-600 font-medium">Dès que possible</p>
+                                )}
+                              </div>
+                              
+                              <div className="bg-slate-50 rounded-lg p-3">
+                                <p className="font-medium text-slate-900">Total</p>
+                                <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-3 bg-blue-50 rounded-lg p-3">
+                              <p className="text-sm text-slate-700 flex items-start space-x-2">
+                                <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
+                                <span>{order.delivery_address}</span>
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col space-y-2 ml-4">
+                            <button
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setTimeout(scrollToTop, 100);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              Voir détails
+                            </button>
+                            
+                            {order.status === 'confirmed' && (
+                              <button
+                                onClick={() => updateOrderStatus(order.id, 'delivering')}
+                                disabled={updatingStatus === order.id}
+                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
+                              >
+                                {updatingStatus === order.id ? (
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
         </div>
 
         {/* Message d'encouragement */}
