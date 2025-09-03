@@ -85,25 +85,25 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   // Fonction de tri par priorité et urgence
   const sortOrdersByPriority = (orders: Order[]): Order[] => {
     return orders.sort((a, b) => {
-      // 1. Priorité absolue : commandes en livraison (en cours)
+      // 1. Priorité absolue : commandes en livraison
       if (a.status === 'delivering' && b.status !== 'delivering') return -1;
       if (b.status === 'delivering' && a.status !== 'delivering') return 1;
       
-      // 2. Priorité express (urgent)
+      // 2. Priorité express
       if (a.delivery_type === 'express' && b.delivery_type !== 'express') return -1;
       if (b.delivery_type === 'express' && a.delivery_type !== 'express') return 1;
       
-      // 3. Pour les commandes express : par ancienneté (plus urgent = plus ancien)
+      // 3. Pour les commandes express : par heure de création (plus ancien en premier)
       if (a.delivery_type === 'express' && b.delivery_type === 'express') {
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       }
       
-      // 4. Pour les commandes standard : par proximité de l'heure de livraison
+      // 4. Pour les commandes standard : par date/heure de livraison prévue
       if (a.delivery_date && b.delivery_date) {
         const dateA = new Date(`${a.delivery_date} ${a.delivery_time || '00:00'}`);
         const dateB = new Date(`${b.delivery_date} ${b.delivery_time || '00:00'}`);
         
-        // Priorité aux commandes du jour
+        // Commandes du jour en premier
         const today = new Date().toISOString().split('T')[0];
         const isAToday = a.delivery_date === today;
         const isBToday = b.delivery_date === today;
@@ -111,11 +111,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
         if (isAToday && !isBToday) return -1;
         if (isBToday && !isAToday) return 1;
         
-        // Puis par heure de livraison prévue
         return dateA.getTime() - dateB.getTime();
       }
       
-      // 5. Fallback : par ancienneté de création
+      // 5. Fallback : par heure de création
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
   };
@@ -124,33 +123,44 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const getOrderUrgency = (order: Order): { level: 'critical' | 'high' | 'medium' | 'low', message: string } => {
     const now = new Date();
     
+    // Commandes en livraison = priorité absolue
+    if (order.status === 'delivering') {
+      return { level: 'critical', message: '🚚 EN LIVRAISON' };
+    }
+    
+    // Logique pour commandes express
     if (order.delivery_type === 'express') {
       const createdAt = new Date(order.created_at);
       const minutesSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 60);
       
-      if (minutesSinceCreated > 45) {
-        return { level: 'critical', message: 'URGENT - Délai dépassé !' };
+      if (minutesSinceCreated > 60) {
+        return { level: 'critical', message: '🚨 CRITIQUE - Délai dépassé!' };
+      } else if (minutesSinceCreated > 45) {
+        return { level: 'high', message: '⚠️ URGENT - Plus de 45min' };
       } else if (minutesSinceCreated > 30) {
-        return { level: 'high', message: 'Très urgent - Moins de 30min' };
+        return { level: 'medium', message: '⏰ Urgent - Plus de 30min' };
       } else {
-        return { level: 'medium', message: 'Express - Moins de 1H' };
+        return { level: 'low', message: '⚡ Express - OK' };
       }
     }
     
+    // Logique pour commandes standard
     if (order.delivery_date) {
       const deliveryDateTime = new Date(`${order.delivery_date} ${order.delivery_time || '00:00'}`);
       const hoursUntilDelivery = (deliveryDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       
       if (hoursUntilDelivery < 0) {
-        return { level: 'critical', message: 'RETARD - Livraison prévue dépassée' };
+        return { level: 'critical', message: '🚨 RETARD - Heure dépassée!' };
       } else if (hoursUntilDelivery < 2) {
-        return { level: 'high', message: 'Urgent - Moins de 2H' };
+        return { level: 'high', message: '⚠️ Urgent - Moins de 2H' };
       } else if (hoursUntilDelivery < 6) {
-        return { level: 'medium', message: 'Bientôt - Moins de 6H' };
+        return { level: 'medium', message: '⏰ Bientôt - Moins de 6H' };
+      } else {
+        return { level: 'low', message: '📅 Programmée' };
       }
     }
     
-    return { level: 'low', message: 'Normal' };
+    return { level: 'low', message: '📋 En attente' };
   };
 
   const getUrgencyColor = (level: string) => {
@@ -997,11 +1007,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                                 {updatingStatus === order.id ? (
                                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 ) : (
-                                  <>
-                                    <Truck className="h-3 w-3" />
-                                    <span>Commencer</span>
-                                  </>
+                                  <Truck className="h-3 w-3" />
                                 )}
+                                <span>Commencer</span>
                               </button>
                             )}
                           </div>
@@ -1053,20 +1061,16 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
-                              <p className="text-slate-600">{new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}</p>
+                              <p className="text-slate-600">
+                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à{' '}
+                                {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
+                              </p>
                             </div>
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Total</p>
                               <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
                             </div>
-                          </div>
-                          
-                          <div className="mt-3 bg-blue-50 rounded-lg p-3">
-                            <p className="text-sm text-slate-700 flex items-start space-x-2">
-                              <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
-                              <span>{order.delivery_address}</span>
-                            </p>
                           </div>
                         </div>
                         
