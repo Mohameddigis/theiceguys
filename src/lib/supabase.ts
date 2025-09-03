@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Client admin avec service_role pour contourner RLS
 export const supabaseAdmin = createClient(
   supabaseUrl, 
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6d2pwc3p0Y2ZycmlrYnNqc2VkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTcxMjk3MSwiZXhwIjoyMDcxMjg4OTcxfQ.1DMCB_oZMN7dxlayzJrn61cXOXbaetJWTqfiLWZ6JEc',
+  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6d2pwc3p0Y2ZycmlrYnNqc2VkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTg2MjQwMCwiZXhwIjoyMDUxNDM4NDAwfQ.l7AUjBo8NwfmpYMwOU6iq8+KjGIRNk5y3kfjdWA/Uks3bUmm3/hZR8IviSMQkc9D/t55LiwqqQVmiD/uVOXNoA',
   {
     auth: {
       autoRefreshToken: false,
@@ -194,15 +194,24 @@ export const orderService = {
 
   // Récupérer toutes les commandes (pour admin)
   async getAllOrders() {
-    const { data, error } = await supabase
+    console.log('🔍 Chargement de toutes les commandes...');
+    
+    const { data, error } = await supabaseAdmin
       .from('orders')
       .select(`
         *,
         customer:customers(*),
-        order_items(*)
+        order_items(*),
+        assigned_driver:delivery_drivers(*)
       `)
       .order('created_at', { ascending: false });
 
+    console.log('📊 Commandes récupérées:', { 
+      count: data?.length, 
+      error,
+      sampleOrder: data?.[0] 
+    });
+    
     if (error) throw error;
     return data;
   },
@@ -237,6 +246,7 @@ export const driverService = {
       const { data, error } = await supabaseAdmin
         .from('delivery_drivers')
         .select('*')
+        .eq('is_active', true)
         .order('name');
 
       console.log('📊 Supabase response:', { 
@@ -290,13 +300,22 @@ export const driverService = {
 
   // Assigner un livreur à une commande
   async assignDriverToOrder(orderId: string, driverId: string) {
-    const { data, error } = await supabase
+    console.log('🔧 Assignation livreur:', { orderId, driverId });
+    
+    const { data, error } = await supabaseAdmin
       .from('orders')
       .update({ assigned_driver_id: driverId })
       .eq('id', orderId)
-      .select()
+      .select(`
+        *,
+        customer:customers(*),
+        order_items(*),
+        assigned_driver:delivery_drivers(*)
+      `)
       .single();
 
+    console.log('📊 Résultat assignation:', { data, error });
+    
     if (error) throw error;
     return data;
   },
