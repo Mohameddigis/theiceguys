@@ -273,7 +273,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return <Clock className="h-4 w-4" />;
       case 'confirmed': return <CheckCircle className="h-4 w-4" />;
-      case 'preparing': return <Package className="h-4 w-4" />;
       case 'delivering': return <Truck className="h-4 w-4" />;
       case 'delivered': return <CheckCircle className="h-4 w-4" />;
       case 'cancelled': return <XCircle className="h-4 w-4" />;
@@ -285,6 +284,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return 'En attente';
       case 'confirmed': return 'Confirmée';
+      case 'preparing': return 'En préparation';
       case 'delivering': return 'En livraison';
       case 'delivered': return 'Livrée';
       case 'cancelled': return 'Annulée';
