@@ -62,7 +62,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const loadDeliveredOrders = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('orders')
         .select(`
           *,
@@ -995,6 +995,93 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                               >
                                 {updatingStatus === order.id ? (
                                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                ) : (
+                                  <>
+                                    <Truck className="h-3 w-3" />
+                                    <span>Commencer</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Mes livraisons récentes ({deliveredOrders.length})
+                </h2>
+              </div>
+              
+              {deliveredOrders.length === 0 ? (
+                <div className="p-8 text-center text-slate-500">
+                  <Archive className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                  <p className="text-lg font-medium">Aucune livraison effectuée</p>
+                  <p className="text-sm">Vos livraisons terminées apparaîtront ici</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-200">
+                  {deliveredOrders.map((order) => (
+                    <div key={order.id} className="p-6 hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <h3 className="font-semibold text-slate-900 text-lg">{order.order_number}</h3>
+                            <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs border font-medium bg-green-100 text-green-800 border-green-200">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Livrée</span>
+                            </div>
+                            {order.delivery_type === 'express' && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                ⚡ EXPRESS
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div className="bg-slate-50 rounded-lg p-3">
+                              <p className="font-medium text-slate-900">{order.customer?.name}</p>
+                              <p className="text-slate-600">{order.customer?.phone}</p>
+                            </div>
+                            
+                            <div className="bg-slate-50 rounded-lg p-3">
+                              <p className="font-medium text-slate-900">Livrée le</p>
+                              <p className="text-slate-600">
+                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
+                              </p>
+                            </div>
+                            
+                            <div className="bg-slate-50 rounded-lg p-3">
+                              <p className="font-medium text-slate-900">Total</p>
+                              <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="ml-4">
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setTimeout(scrollToTop, 100);
+                            }}
+                            className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Voir détails
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Message d'encouragement */}
