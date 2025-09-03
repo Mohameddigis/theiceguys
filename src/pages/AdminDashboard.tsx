@@ -770,21 +770,92 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header fixe */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full w-10 h-10 flex items-center justify-center">
-                <Package className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Administration</h1>
-                <p className="text-slate-600">The Ice Guys</p>
-              </div>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar fixe */}
+      <div className="w-64 bg-white shadow-lg border-r border-slate-200 fixed h-full z-30">
+        <div className="p-6">
+          {/* Logo/Header */}
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full w-10 h-10 flex items-center justify-center">
+              <Shield className="h-6 w-6 text-white" />
             </div>
-            
+            <div>
+              <h1 className="text-lg font-bold text-slate-900">Administration</h1>
+              <p className="text-sm text-slate-600">The Ice Guys</p>
+            </div>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="space-y-2">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                activeTab === 'orders'
+                  ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg'
+                  : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <Package className="h-5 w-5" />
+              <span>Commandes</span>
+              <span className={`ml-auto px-2 py-1 rounded-full text-xs font-bold ${
+                activeTab === 'orders'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-brand-primary text-white'
+              }`}>
+                {orders.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('drivers')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                activeTab === 'drivers'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                  : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <Truck className="h-5 w-5" />
+              <span>Livreurs</span>
+              <span className={`ml-auto px-2 py-1 rounded-full text-xs font-bold ${
+                activeTab === 'drivers'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-green-500 text-white'
+              }`}>
+                {drivers.length}
+              </span>
+            </button>
+          </nav>
+
+          {/* Logout Button */}
+          <div className="absolute bottom-6 left-6 right-6">
+            <button
+              onClick={onBack}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-medium transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Déconnexion</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content avec margin pour la sidebar */}
+      <div className="flex-1 ml-64">
+      {/* Header fixe */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {activeTab === 'orders' ? '📦 Gestion des Commandes' : '🚚 Gestion des Livreurs'}
+              </h2>
+              <p className="text-slate-600">
+                {activeTab === 'orders' 
+                  ? `${orders.length} commande(s) au total`
+                  : `${drivers.length} livreur(s) dans l'équipe`
+                }
+              </p>
+            </div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={loadData}
@@ -794,44 +865,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Actualiser</span>
               </button>
-              
-              <button
-                onClick={onBack}
-                className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Déconnexion</span>
-              </button>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Tabs */}
-        <div className="flex space-x-1 bg-slate-200 rounded-lg p-1 mb-8 w-fit">
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              activeTab === 'orders'
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            📦 Commandes ({orderStats.total})
-          </button>
-          <button
-            onClick={() => setActiveTab('drivers')}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              activeTab === 'drivers'
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            🚚 Livreurs ({driverStats.total})
-          </button>
-        </div>
-
         {/* Statistiques */}
         {activeTab === 'orders' ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -1191,6 +1230,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* Modal d'assignation */}
