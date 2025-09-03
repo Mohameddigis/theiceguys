@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Package, Users, Truck, Clock, CheckCircle, XCircle, Plus, Edit, Trash2, Download, RefreshCw, UserPlus, MapPin, Phone, Mail, Calendar, AlertCircle, User } from 'lucide-react';
+import { LogOut, Package, Users, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, User, Calendar, AlertCircle, Plus, Trash2, Edit, Eye, EyeOff, Mail, Shield } from 'lucide-react';
 import { Order, DeliveryDriver, orderService, driverService, supabaseAdmin } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 
