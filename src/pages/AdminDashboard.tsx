@@ -583,7 +583,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                       {updatingStatus === selectedOrder.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                       ) : (
-                        getStatusIcon(status)
+                        <LucideIcons.Clock className="h-4 w-4" />
                       )}
                       <span>{getStatusLabel(status)}</span>
                     </button>
