@@ -472,8 +472,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     total: orders.length,
     express: expressOrders.length,
     delivering: orders.filter(o => o.status === 'delivering').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length,
-    critical: orders.filter(o => getOrderUrgency(o).level === 'critical').length
+    confirmed: orders.filter(o => o.status === 'confirmed').length
   };
 
   if (selectedOrder) {
@@ -999,7 +998,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                                 ) : (
                                   <Truck className="h-3 w-3" />
                                 )}
-                                <span>Commencer</span>
+                                <span>En livraison</span>
                               </button>
                             )}
                           </div>
@@ -1014,14 +1013,14 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             <>
               <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
                 <h2 className="text-lg font-semibold text-slate-900">
-                  Mes livraisons récentes ({deliveredOrders.length})
+                  Mes livraisons effectuées ({deliveredOrders.length})
                 </h2>
               </div>
               
               {deliveredOrders.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   <Archive className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                  <p className="text-lg font-medium">Aucune livraison récente</p>
+                  <p className="text-lg font-medium">Aucune livraison effectuée</p>
                   <p className="text-sm">Vos livraisons terminées apparaîtront ici</p>
                 </div>
               ) : (
@@ -1036,9 +1035,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                               <CheckCircle className="h-3 w-3" />
                               <span>Livrée</span>
                             </div>
-                            {order.has_reception && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                📋 Réception
+                            {order.delivery_type === 'express' && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                ⚡ EXPRESS
                               </span>
                             )}
                           </div>
@@ -1052,8 +1051,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
                               <p className="text-slate-600">
-                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à{' '}
-                                {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
+                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
                               </p>
                             </div>
                             
@@ -1061,6 +1059,13 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                               <p className="font-medium text-slate-900">Total</p>
                               <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
                             </div>
+                          </div>
+                          
+                          <div className="mt-3 bg-blue-50 rounded-lg p-3">
+                            <p className="text-sm text-slate-700 flex items-start space-x-2">
+                              <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
+                              <span>{order.delivery_address}</span>
+                            </p>
                           </div>
                         </div>
                         
@@ -1085,24 +1090,12 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
         </div>
 
         {/* Message d'encouragement */}
-        {activeTab === 'active' && orders.length > 0 && (
+        {orders.length > 0 && (
           <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
-            <h3 className="text-xl font-bold mb-2">
-              {stats.critical > 0 ? '🚨 Commandes urgentes à traiter !' : 'Excellente journée de livraison ! 🚚'}
-            </h3>
+            <h3 className="text-xl font-bold mb-2">Excellente journée de livraison ! 🚚</h3>
             <p className="text-green-100">
-              {stats.critical > 0 && `⚠️ ${stats.critical} commande(s) critique(s) - `}
-              {stats.express > 0 && `⚡ ${stats.express} express - `}
-              {orders.length} commande(s) au total
-            </p>
-          </div>
-        )}
-        
-        {activeTab === 'delivered' && deliveredOrders.length > 0 && (
-          <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
-            <h3 className="text-xl font-bold mb-2">Bravo ! 🎉</h3>
-            <p className="text-green-100">
-              Vous avez effectué {deliveredOrders.length} livraison(s) récemment. Excellent travail !
+              Vous avez {orders.length} commande(s) à livrer. 
+              {stats.express > 0 && ` Attention aux ${stats.express} commande(s) express !`}
             </p>
           </div>
         )}
