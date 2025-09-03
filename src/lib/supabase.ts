@@ -299,12 +299,12 @@ export const driverService = {
   },
 
   // Assigner un livreur à une commande
-  async assignDriverToOrder(orderId: string, driverId: string) {
+  async assignDriverToOrder(orderId: string, driverId: string | null) {
     console.log('🔧 Assignation livreur:', { orderId, driverId });
     
     const { data, error } = await supabaseAdmin
       .from('orders')
-      .update({ assigned_driver_id: driverId })
+      .update({ assigned_driver_id: driverId || null })
       .eq('id', orderId)
       .select(`
         *,

@@ -166,7 +166,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   const assignDriverToOrder = async (orderId: string, driverId: string) => {
     try {
-      await driverService.assignDriverToOrder(orderId, driverId);
+      await driverService.assignDriverToOrder(orderId, driverId || null);
       await loadOrders();
       if (selectedOrder && selectedOrder.id === orderId) {
         const updatedOrder = orders.find(o => o.id === orderId);
