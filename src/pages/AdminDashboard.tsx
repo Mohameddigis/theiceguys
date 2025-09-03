@@ -9,6 +9,9 @@ interface AdminDashboardProps {
 
 function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'orders' | 'drivers'>('orders');
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [orderToAssign, setOrderToAssign] = useState<Order | null>(null);
+  const [assigningOrder, setAssigningOrder] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [drivers, setDrivers] = useState<DeliveryDriver[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,6 +219,37 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       console.error('Erreur lors de la génération du PDF:', error);
       alert('Erreur lors de la génération du bon de commande');
     }
+  };
+
+  const handleAssignDriver = async (orderId: string, driverId: string) => {
+    try {
+      setAssigningOrder(true);
+      
+      // Assigner le livreur à la commande
+      await driverService.assignDriverToOrder(orderId, driverId);
+      
+      // Mettre à jour le statut de la commande à "confirmed"
+      await driverService.updateOrderStatus(orderId, 'confirmed');
+      
+      // Recharger les données
+      await Promise.all([loadOrders(), loadDrivers()]);
+      
+      // Fermer le modal
+      setShowAssignModal(false);
+      setOrderToAssign(null);
+      
+      alert('Commande assignée avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation:', error);
+      alert('Erreur lors de l\'assignation de la commande');
+    } finally {
+      setAssigningOrder(false);
+    }
+  };
+
+  const openAssignModal = (order: Order) => {
+    setOrderToAssign(order);
+    setShowAssignModal(true);
   };
 
   const getStatusColor = (status: Order['status']) => {
