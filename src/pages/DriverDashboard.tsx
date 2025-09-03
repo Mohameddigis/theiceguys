@@ -36,10 +36,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const loadOrders = async () => {
     try {
       setLoading(true);
-      // Les livreurs ont maintenant accès à toutes les commandes mais on filtre côté client
-      const allOrders = await driverService.getAllOrders();
-      // Filtrer pour ne montrer que les commandes assignées à ce livreur
-      const driverOrders = allOrders.filter(order => order.assigned_driver_id === driverId);
+      const driverOrders = await driverService.getDriverOrders(driverId);
       setOrders(driverOrders);
     } catch (error) {
       console.error('Erreur lors du chargement des commandes:', error);
