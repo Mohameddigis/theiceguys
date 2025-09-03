@@ -322,7 +322,8 @@ export const driverService = {
 
   // Mettre à jour le statut d'une commande (pour les livreurs)
   async updateOrderStatus(orderId: string, status: Order['status']) {
-    const { data, error } = await supabase
+    // Les livreurs ont maintenant les mêmes permissions que les admins
+    const { data, error } = await supabaseAdmin
       .from('orders')
       .update({ status })
       .eq('id', orderId)
@@ -354,7 +355,8 @@ export const driverService = {
 
   // Enregistrer la position d'un livreur
   async recordDriverLocation(driverId: string, latitude: number, longitude: number, address?: string) {
-    const { data, error } = await supabase
+    // Les livreurs ont maintenant les mêmes permissions que les admins
+    const { data, error } = await supabaseAdmin
       .from('driver_locations')
       .insert([{
         driver_id: driverId,
