@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation, User, Calendar, AlertCircle, Archive, Activity } from 'lucide-react';
 import { Order, driverService, supabase } from '../lib/supabase';
+import DeliveryModal from '../components/DeliveryModal';
 import { generateOrderPDF } from '../utils/pdfGenerator';
 import DeliveryReceptionModal from '../components/DeliveryReceptionModal';
 import { generateReceptionPDF } from '../utils/receptionPdfGenerator';
@@ -21,6 +22,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [showReceptionModal, setShowReceptionModal] = useState(false);
   const [processingReception, setProcessingReception] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'delivered'>('active');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<'deliver' | 'cancel'>('deliver');
+  const [showModal, setShowModal] = useState(false);
   const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
 
   // Scroll to top function
