@@ -3,8 +3,6 @@ import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Dow
 import { Order, driverService, supabase } from '../lib/supabase';
 import DeliveryModal from '../components/DeliveryModal';
 import { generateOrderPDF } from '../utils/pdfGenerator';
-import DeliveryReceptionModal from '../components/DeliveryReceptionModal';
-import { generateReceptionPDF } from '../utils/receptionPdfGenerator';
 import { stockService } from '../lib/stockService';
 
 interface DriverDashboardProps {
@@ -19,8 +17,6 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [driverStatus, setDriverStatus] = useState<'offline' | 'available' | 'busy' | 'on_break'>('available');
-  const [showReceptionModal, setShowReceptionModal] = useState(false);
-  const [processingReception, setProcessingReception] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'delivered'>('active');
   const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
   const [selectedOrderForModal, setSelectedOrderForModal] = useState<Order | null>(null);
@@ -198,7 +194,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
-    // Si le statut est "delivered", ouvrir le modal de réception
+    // Si le statut est "delivered", ouvrir le modal de livraison
     if (newStatus === 'delivered') {
       const order = orders.find(o => o.id === orderId);
       if (order) {
@@ -247,148 +243,6 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     } finally {
       setUpdatingStatus(null);
     }
-  };
-
-  const handleReceptionComplete = async (receptionData: {
-    receiverName: string;
-    signature: string;
-    amountReceived: number;
-    paymentMethod: 'cash' | 'card' | 'transfer';
-    changeGiven: number;
-    notes?: string;
-  }) => {
-    if (!selectedOrder) return;
-
-    try {
-      setProcessingReception(true);
-
-      // 1. Enregistrer la réception en base
-      const { data: reception, error: receptionError } = await supabase
-        .from('delivery_receptions')
-        .insert([{
-          order_id: selectedOrder.id,
-          driver_id: driverId,
-          receiver_name: receptionData.receiverName,
-          receiver_signature: receptionData.signature,
-          amount_received: receptionData.amountReceived,
-          payment_method: receptionData.paymentMethod,
-          change_given: receptionData.changeGiven,
-          reception_notes: receptionData.notes
-        }])
-        .select()
-        .single();
-
-      if (receptionError) throw receptionError;
-
-      // 2. Mettre à jour le statut de la commande
-      await driverService.updateOrderStatus(selectedOrder.id, 'delivered');
-
-      // 3. Marquer la commande comme ayant une réception
-      await supabase
-        .from('orders')
-        .update({ has_reception: true })
-        .eq('id', selectedOrder.id);
-
-      // 4. Décompter le stock du livreur
-      await deductDriverStock(selectedOrder);
-
-      // 5. Générer le PDF de réception
-      const pdfBlob = await generateReceptionPDF(selectedOrder, {
-        ...receptionData,
-        receptionDate: new Date().toISOString()
-      });
-
-      // 6. Convertir le PDF en base64 pour l'email
-      const pdfBase64 = await blobToBase64(pdfBlob);
-
-      // 7. Envoyer l'email avec le bon de réception
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-reception-confirmation`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerEmail: selectedOrder.customer?.email,
-          customerName: selectedOrder.customer?.name,
-          orderNumber: selectedOrder.order_number,
-          receptionData: {
-            ...receptionData,
-            receptionDate: new Date().toISOString()
-          },
-          pdfBase64: pdfBase64.split(',')[1] // Remove data:application/pdf;base64, prefix
-        })
-      });
-
-      // 8. Enregistrer la position de livraison
-      recordCurrentLocation();
-
-      // 9. Recharger les commandes et fermer le modal
-      await loadOrders();
-      await loadDeliveredOrders();
-      setShowModal(false);
-      setSelectedOrderForModal(null);
-      
-      alert('✅ Livraison confirmée avec succès ! Le bon de réception a été envoyé au client.');
-      
-    } catch (error) {
-      console.error('Erreur lors de la confirmation de réception:', error);
-      alert('❌ Erreur lors de la confirmation de réception. Veuillez réessayer.');
-    } finally {
-      setProcessingReception(false);
-    }
-  };
-
-  const deductDriverStock = async (order: Order) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Récupérer les assignations du livreur pour aujourd'hui
-      const { data: assignments, error } = await supabase
-        .from('driver_stock_assignments')
-        .select('*')
-        .eq('driver_id', driverId)
-        .eq('assignment_date', today);
-
-      if (error) throw error;
-
-      // Décompter les quantités livrées
-      for (const item of order.order_items || []) {
-        const assignment = assignments?.find(a => 
-          a.ice_type === item.ice_type && a.package_size === item.package_size
-        );
-
-        if (assignment) {
-          const newRemaining = Math.max(0, assignment.quantity_remaining - item.quantity);
-          
-          await supabase
-            .from('driver_stock_assignments')
-            .update({ quantity_remaining: newRemaining })
-            .eq('id', assignment.id);
-
-          // Enregistrer le mouvement de stock
-          await stockService.recordStockMovement({
-            movement_type: 'delivery',
-            ice_type: item.ice_type,
-            package_size: item.package_size,
-            quantity_change: -item.quantity,
-            reference_id: order.id,
-            notes: `Livraison commande ${order.order_number}`
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la déduction du stock:', error);
-    }
-  };
-
-  const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   };
 
   const recordCurrentLocation = () => {
@@ -446,6 +300,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const getStatusLabel = (status: Order['status']) => {
     switch (status) {
       case 'pending': return 'En attente';
+      case 'confirmed': return 'Confirmée';
       case 'delivering': return 'En livraison';
       case 'delivered': return 'Livrée';
       case 'cancelled': return 'Annulée';
@@ -485,12 +340,13 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   // Séparer les commandes par priorité
   const expressOrders = orders.filter(order => order.delivery_type === 'express');
   const standardOrders = orders.filter(order => order.delivery_type === 'standard');
-  const sortedOrders = [...expressOrders, ...standardOrders];
+  const criticalOrders = orders.filter(order => getOrderUrgency(order).level === 'critical');
 
   // Statistiques
   const stats = {
     total: orders.length,
     express: expressOrders.length,
+    critical: criticalOrders.length,
     delivering: orders.filter(o => o.status === 'delivering').length,
     confirmed: orders.filter(o => o.status === 'confirmed').length
   };
@@ -554,27 +410,44 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                   Actions livreur :
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {(['delivering', 'delivered', 'cancelled'] as const).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => updateOrderStatus(selectedOrder.id, status)}
-                      disabled={selectedOrder.status === status || updatingStatus === selectedOrder.id}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
-                        selectedOrder.status === status
-                          ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                          : updatingStatus === selectedOrder.id
-                          ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                          : 'bg-white border border-green-300 hover:bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {updatingStatus === selectedOrder.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                      ) : (
-                        getStatusIcon(status)
-                      )}
-                      <span>{getStatusLabel(status)}</span>
-                    </button>
-                  ))}
+                  <button
+                    onClick={() => updateOrderStatus(selectedOrder.id, 'delivering')}
+                    disabled={selectedOrder.status === 'delivering' || updatingStatus === selectedOrder.id}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                      selectedOrder.status === 'delivering'
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                    }`}
+                  >
+                    <Truck className="h-4 w-4" />
+                    <span>En livraison</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => updateOrderStatus(selectedOrder.id, 'delivered')}
+                    disabled={selectedOrder.status === 'delivered' || updatingStatus === selectedOrder.id}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                      selectedOrder.status === 'delivered'
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Livrée</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => updateOrderStatus(selectedOrder.id, 'cancelled')}
+                    disabled={selectedOrder.status === 'cancelled' || updatingStatus === selectedOrder.id}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                      selectedOrder.status === 'cancelled'
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    <span>Annuler</span>
+                  </button>
                 </div>
                 <p className="text-sm text-slate-600 mt-2">
                   💡 Mettez à jour le statut selon l'avancement de votre livraison
@@ -751,47 +624,6 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             </div>
           </div>
         </div>
-        
-        {/* Modal de livraison/annulation */}
-        {showModal && selectedOrderForModal && (
-          <DeliveryModal
-            isOpen={showModal}
-            onClose={() => {
-              setShowModal(false);
-              setSelectedOrderForModal(null);
-            }}
-            order={selectedOrderForModal}
-            onSuccess={() => {
-        {showModal && selectedOrderForModal && modalMode === 'deliver' && (
-              loadDeliveredOrders();
-            order={selectedOrderForModal}
-              setSelectedOrderForModal(null);
-            onClose={() => {
-              setShowModal(false);
-              setSelectedOrderForModal(null);
-            }}
-            mode={modalMode}
-          />
-        )}
-        
-        {/* Modal général pour livraison/annulation */}
-        {showModal && selectedOrderForModal && (
-          <DeliveryModal
-            isOpen={showModal}
-            onClose={() => {
-              setShowModal(false);
-              setSelectedOrderForModal(null);
-            }}
-            order={selectedOrderForModal}
-            onSuccess={() => {
-              loadOrders();
-              loadDeliveredOrders();
-              setShowModal(false);
-              setSelectedOrderForModal(null);
-            }}
-            mode={modalMode}
-          />
-        )}
       </div>
     );
   }
@@ -869,9 +701,365 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                 <p className="text-sm text-slate-600">Express</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.express}</p>
               </div>
-              <div className="text-orange-600">⚡</div>
+              <div className="text-orange-600 text-2xl">⚡</div>
             </div>
           </div>
           
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Critiques</p>
+                <p className="text-2xl font-bold text-red-600">{stats.critical}</p>
+              </div>
+              <div className="text-red-600 text-2xl">🚨</div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">En cours</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.delivering}</p>
+              </div>
+              <Truck className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Confirmées</p>
+                <p className="text-2xl font-bold text-green-600">{stats.confirmed}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Onglets */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+          <div className="border-b border-slate-200">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-colors relative ${
+                  activeTab === 'active'
+                    ? 'text-green-600 bg-green-50 border-b-2 border-green-600'
+                    : 'text-slate-600 hover:text-green-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Activity className="h-5 w-5" />
+                  <span>Commandes Actives</span>
+                  {stats.total > 0 && (
+                    <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                      {stats.total}
+                    </span>
+                  )}
+                  {stats.express > 0 && (
+                    <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                      {stats.express} ⚡
+                    </span>
+                  )}
+                  {stats.critical > 0 && (
+                    <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full animate-bounce">
+                      {stats.critical} 🚨
+                    </span>
+                  )}
+                </div>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('delivered')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-colors relative ${
+                  activeTab === 'delivered'
+                    ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-600'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Archive className="h-5 w-5" />
+                  <span>Mes Livraisons</span>
+                  {deliveredOrders.length > 0 && (
+                    <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                      {deliveredOrders.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Contenu des onglets */}
+        {activeTab === 'active' ? (
+          <div className="space-y-4">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                <p className="text-slate-600">Chargement des commandes...</p>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                <Package className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Aucune commande active</h3>
+                <p className="text-slate-600">Vous n'avez actuellement aucune commande assignée.</p>
+              </div>
+            ) : (
+              orders.map((order, index) => {
+                const urgency = getOrderUrgency(order);
+                const priority = index + 1;
+                
+                return (
+                  <div 
+                    key={order.id} 
+                    className={`bg-white rounded-xl shadow-lg border-2 transition-all duration-300 hover:shadow-xl cursor-pointer ${
+                      urgency.level === 'critical' 
+                        ? 'border-red-500 animate-pulse' 
+                        : urgency.level === 'high'
+                        ? 'border-orange-400'
+                        : urgency.level === 'medium'
+                        ? 'border-yellow-400'
+                        : 'border-slate-200 hover:border-green-300'
+                    }`}
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setTimeout(scrollToTop, 100);
+                    }}
+                  >
+                    <div className="p-6">
+                      {/* Header avec priorité */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                            urgency.level === 'critical' ? 'bg-red-600' :
+                            urgency.level === 'high' ? 'bg-orange-500' :
+                            urgency.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                          }`}>
+                            {priority}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900">{order.order_number}</h3>
+                            <div className="flex items-center space-x-2">
+                              <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusIcon(order.status)}
+                                <span className="ml-1">{getStatusLabel(order.status)}</span>
+                              </div>
+                              {order.delivery_type === 'express' && (
+                                <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                                  ⚡ EXPRESS
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-green-600">{order.total} MAD</div>
+                          <div className={`text-xs font-medium px-2 py-1 rounded-full border ${getUrgencyColor(urgency.level)}`}>
+                            {urgency.message}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Informations principales */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <User className="h-4 w-4 text-slate-400" />
+                            <span className="font-medium text-slate-900">{order.customer?.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-green-600" />
+                            <a 
+                              href={`tel:${order.customer?.phone}`} 
+                              className="text-green-600 hover:text-green-700 font-medium"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {order.customer?.phone}
+                            </a>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {order.delivery_type === 'express' ? (
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4 text-orange-600" />
+                              <span className="text-orange-700 font-medium">Livraison immédiate</span>
+                            </div>
+                          ) : (
+                            order.delivery_date && (
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-slate-400" />
+                                <span className="text-slate-700">{order.delivery_date} à {order.delivery_time}</span>
+                              </div>
+                            )
+                          )}
+                          <div className="flex items-start space-x-2">
+                            <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
+                            <span className="text-slate-700 text-sm">{order.delivery_address}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Articles */}
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <div className="flex flex-wrap gap-2">
+                          {order.order_items?.map((item, idx) => (
+                            <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">
+                              {item.quantity}x {getIceTypeName(item.ice_type)} ({item.package_size})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Actions rapides */}
+                      <div className="mt-4 pt-4 border-t border-slate-200 flex flex-wrap gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateOrderStatus(order.id, 'delivering');
+                          }}
+                          disabled={order.status === 'delivering' || updatingStatus === order.id}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 text-sm ${
+                            order.status === 'delivering'
+                              ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                              : 'bg-orange-600 hover:bg-orange-700 text-white'
+                          }`}
+                        >
+                          <Truck className="h-4 w-4" />
+                          <span>En livraison</span>
+                        </button>
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrderForModal(order);
+                            setModalMode('deliver');
+                            setShowModal(true);
+                          }}
+                          disabled={order.status === 'delivered' || updatingStatus === order.id}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 text-sm ${
+                            order.status === 'delivered'
+                              ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                              : 'bg-green-600 hover:bg-green-700 text-white'
+                          }`}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Livrer</span>
+                        </button>
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrderForModal(order);
+                            setModalMode('cancel');
+                            setShowModal(true);
+                          }}
+                          disabled={order.status === 'cancelled' || updatingStatus === order.id}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 text-sm ${
+                            order.status === 'cancelled'
+                              ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                              : 'bg-red-600 hover:bg-red-700 text-white'
+                          }`}
+                        >
+                          <XCircle className="h-4 w-4" />
+                          <span>Annuler</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {deliveredOrders.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                <Archive className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Aucune livraison</h3>
+                <p className="text-slate-600">Vous n'avez encore effectué aucune livraison.</p>
+              </div>
+            ) : (
+              deliveredOrders.map((order) => (
+                <div key={order.id} className="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                        <CheckCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">{order.order_number}</h3>
+                        <p className="text-sm text-slate-600">
+                          Livrée le {new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-green-600">{order.total} MAD</div>
+                      <div className="text-xs text-slate-500">Encaissé</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-slate-400" />
+                        <span className="text-slate-700">{order.customer?.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Phone className="h-4 w-4 text-slate-400" />
+                        <span className="text-slate-700">{order.customer?.phone}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-start space-x-2">
+                        <MapPin className="h-4 w-4 text-slate-400 mt-0.5" />
+                        <span className="text-slate-700 text-sm">{order.delivery_address}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <div className="flex flex-wrap gap-2">
+                      {order.order_items?.map((item, idx) => (
+                        <span key={idx} className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                          {item.quantity}x {getIceTypeName(item.ice_type)} ({item.package_size})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de livraison/annulation */}
+      {showModal && selectedOrderForModal && (
+        <DeliveryModal
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedOrderForModal(null);
+          }}
+          order={selectedOrderForModal}
+          driverId={driverId}
+          onSuccess={() => {
+            loadOrders();
+            loadDeliveredOrders();
+            setShowModal(false);
+            setSelectedOrderForModal(null);
+          }}
+          mode={modalMode}
+        />
+      )}
+    </div>
+  );
+}
+
+export default DriverDashboard;
