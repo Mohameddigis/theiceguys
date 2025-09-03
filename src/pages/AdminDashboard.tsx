@@ -1064,7 +1064,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                      : 'Non assigné'}
                                   <span>{getDriverStatusLabel(order.assigned_driver.current_status)}</span>
                                 </div>
-                              </div>
                             ) : (
                               <p className="text-red-600 font-medium">Non assigné</p>
                             )}
