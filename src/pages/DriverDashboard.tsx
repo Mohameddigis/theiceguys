@@ -1015,7 +1015,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             <>
               <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
                 <h2 className="text-lg font-semibold text-slate-900">
-                  Mes livraisons effectuées ({deliveredOrders.length})
+                  Mes livraisons récentes ({deliveredOrders.length})
                 </h2>
               </div>
               
