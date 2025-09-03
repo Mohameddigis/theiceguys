@@ -108,8 +108,8 @@ function Hero({ onOrderClick }: HeroProps) {
                 />
               </div>
               <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                Votre partenaire de confiance pour des glaçons de qualité supérieure. 
-                Livraison rapide pour professionnels et particuliers.
+                Votre partenaire de confiance pour des glaçons de qualité à <b>Marrakech.</b> 
+                Livraison rapide 7J/24H.
               </p>
             </div>
 
