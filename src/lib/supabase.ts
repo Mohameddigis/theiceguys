@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Client admin avec service_role pour contourner RLS
 export const supabaseAdmin = createClient(
   supabaseUrl, 
-  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6d2pwc3p0Y2ZycmlrYnNqc2VkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTg2MjQwMCwiZXhwIjoyMDUxNDM4NDAwfQ.l7AUjBo8NwfmpYMwOU6iq8+KjGIRNk5y3kfjdWA/Uks3bUmm3/hZR8IviSMQkc9D/t55LiwqqQVmiD/uVOXNoA',
+  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6d2pwc3p0Y2ZycmlrYnNqc2VkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTcxMjk3MSwiZXhwIjoyMDcxMjg4OTcxfQ.1DMCB_oZMN7dxlayzJrn61cXOXbaetJWTqfiLWZ6JEc',
   {
     auth: {
       autoRefreshToken: false,
