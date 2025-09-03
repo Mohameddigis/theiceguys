@@ -154,10 +154,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const getUrgencyColor = (level: string) => {
     switch (level) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-300 animate-pulse';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-300';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'low': return 'bg-green-100 text-green-800 border-green-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
@@ -463,16 +463,15 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   };
 
   // Séparer les commandes par priorité
-  const expressOrders = orders.filter(order => order.delivery_type === 'express');
-  const standardOrders = orders.filter(order => order.delivery_type === 'standard');
-  const sortedOrders = [...expressOrders, ...standardOrders];
+  const sortedOrders = sortOrdersByPriority(orders);
 
   // Statistiques
   const stats = {
     total: orders.length,
-    express: expressOrders.length,
+    express: orders.filter(o => o.delivery_type === 'express').length,
     delivering: orders.filter(o => o.status === 'delivering').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length
+    confirmed: orders.filter(o => o.status === 'confirmed').length,
+    critical: orders.filter(o => getOrderUrgency(o).level === 'critical').length
   };
 
   if (selectedOrder) {
@@ -1065,7 +1064,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                           </div>
                         </div>
                         
-                        <div className="ml-4">
+                        <div className="flex flex-col space-y-2 ml-4">
                           <button
                             onClick={() => {
                               setSelectedOrder(order);
