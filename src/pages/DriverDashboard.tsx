@@ -62,7 +62,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
 
   const loadDeliveredOrders = async () => {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           *,
@@ -85,25 +85,25 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   // Fonction de tri par priorité et urgence
   const sortOrdersByPriority = (orders: Order[]): Order[] => {
     return orders.sort((a, b) => {
-      // 1. Priorité absolue : commandes en livraison
+      // 1. Priorité absolue : commandes en livraison (en cours)
       if (a.status === 'delivering' && b.status !== 'delivering') return -1;
       if (b.status === 'delivering' && a.status !== 'delivering') return 1;
       
-      // 2. Priorité express
+      // 2. Priorité express (urgent)
       if (a.delivery_type === 'express' && b.delivery_type !== 'express') return -1;
       if (b.delivery_type === 'express' && a.delivery_type !== 'express') return 1;
       
-      // 3. Pour les commandes express : par heure de création (plus ancien en premier)
+      // 3. Pour les commandes express : par ancienneté (plus urgent = plus ancien)
       if (a.delivery_type === 'express' && b.delivery_type === 'express') {
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       }
       
-      // 4. Pour les commandes standard : par date/heure de livraison prévue
+      // 4. Pour les commandes standard : par proximité de l'heure de livraison
       if (a.delivery_date && b.delivery_date) {
         const dateA = new Date(`${a.delivery_date} ${a.delivery_time || '00:00'}`);
         const dateB = new Date(`${b.delivery_date} ${b.delivery_time || '00:00'}`);
         
-        // Commandes du jour en premier
+        // Priorité aux commandes du jour
         const today = new Date().toISOString().split('T')[0];
         const isAToday = a.delivery_date === today;
         const isBToday = b.delivery_date === today;
@@ -111,10 +111,11 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
         if (isAToday && !isBToday) return -1;
         if (isBToday && !isAToday) return 1;
         
+        // Puis par heure de livraison prévue
         return dateA.getTime() - dateB.getTime();
       }
       
-      // 5. Fallback : par heure de création
+      // 5. Fallback : par ancienneté de création
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
   };
@@ -1015,7 +1016,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             <>
               <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
                 <h2 className="text-lg font-semibold text-slate-900">
-                  Mes livraisons récentes ({deliveredOrders.length})
+                  Mes livraisons effectuées ({deliveredOrders.length})
                 </h2>
               </div>
               
@@ -1052,9 +1053,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
-                              <p className="text-slate-600">
-                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
-                              </p>
+                              <p className="text-slate-600">{new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}</p>
                             </div>
                             
                             <div className="bg-slate-50 rounded-lg p-3">
@@ -1062,9 +1061,16 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                               <p className="text-green-600 font-bold text-lg">{order.total} MAD</p>
                             </div>
                           </div>
+                          
+                          <div className="mt-3 bg-blue-50 rounded-lg p-3">
+                            <p className="text-sm text-slate-700 flex items-start space-x-2">
+                              <MapPin className="h-4 w-4 mt-0.5 text-blue-600" />
+                              <span>{order.delivery_address}</span>
+                            </p>
+                          </div>
                         </div>
                         
-                        <div className="ml-4">
+                        <div className="flex flex-col space-y-2 ml-4">
                           <button
                             onClick={() => {
                               setSelectedOrder(order);
