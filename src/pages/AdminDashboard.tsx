@@ -1059,7 +1059,9 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             {order.assigned_driver ? (
                               <div>
                                 <p className="text-slate-600">{order.assigned_driver.name}</p>
-                                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs border font-medium mt-1 ${getDriverStatusColor(order.assigned_driver.current_status)}`}>
+                                   Livreur: {order.assigned_driver_id ? 
+                                     drivers.find(d => d.id === order.assigned_driver_id)?.name || 'Livreur introuvable' 
+                                     : 'Non assigné'}
                                   <span>{getDriverStatusLabel(order.assigned_driver.current_status)}</span>
                                 </div>
                               </div>
