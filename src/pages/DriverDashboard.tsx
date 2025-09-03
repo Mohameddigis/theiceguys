@@ -123,52 +123,41 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const getOrderUrgency = (order: Order): { level: 'critical' | 'high' | 'medium' | 'low', message: string } => {
     const now = new Date();
     
-    // Commandes en livraison = priorité absolue
-    if (order.status === 'delivering') {
-      return { level: 'critical', message: '🚚 EN LIVRAISON' };
-    }
-    
-    // Logique pour commandes express
     if (order.delivery_type === 'express') {
       const createdAt = new Date(order.created_at);
       const minutesSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 60);
       
-      if (minutesSinceCreated > 60) {
-        return { level: 'critical', message: '🚨 CRITIQUE - Délai dépassé!' };
-      } else if (minutesSinceCreated > 45) {
-        return { level: 'high', message: '⚠️ URGENT - Plus de 45min' };
+      if (minutesSinceCreated > 45) {
+        return { level: 'critical', message: 'URGENT - Délai dépassé !' };
       } else if (minutesSinceCreated > 30) {
-        return { level: 'medium', message: '⏰ Urgent - Plus de 30min' };
+        return { level: 'high', message: 'Très urgent - Moins de 30min' };
       } else {
-        return { level: 'low', message: '⚡ Express - OK' };
+        return { level: 'medium', message: 'Express - Moins de 1H' };
       }
     }
     
-    // Logique pour commandes standard
     if (order.delivery_date) {
       const deliveryDateTime = new Date(`${order.delivery_date} ${order.delivery_time || '00:00'}`);
       const hoursUntilDelivery = (deliveryDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       
       if (hoursUntilDelivery < 0) {
-        return { level: 'critical', message: '🚨 RETARD - Heure dépassée!' };
+        return { level: 'critical', message: 'RETARD - Livraison prévue dépassée' };
       } else if (hoursUntilDelivery < 2) {
-        return { level: 'high', message: '⚠️ Urgent - Moins de 2H' };
+        return { level: 'high', message: 'Urgent - Moins de 2H' };
       } else if (hoursUntilDelivery < 6) {
-        return { level: 'medium', message: '⏰ Bientôt - Moins de 6H' };
-      } else {
-        return { level: 'low', message: '📅 Programmée' };
+        return { level: 'medium', message: 'Bientôt - Moins de 6H' };
       }
     }
     
-    return { level: 'low', message: '📋 En attente' };
+    return { level: 'low', message: 'Normal' };
   };
 
   const getUrgencyColor = (level: string) => {
     switch (level) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-300';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-300 animate-pulse';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'low': return 'bg-green-100 text-green-800 border-green-300';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
@@ -1007,9 +996,11 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                                 {updatingStatus === order.id ? (
                                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 ) : (
-                                  <Truck className="h-3 w-3" />
+                                  <>
+                                    <Truck className="h-3 w-3" />
+                                    <span>Commencer</span>
+                                  </>
                                 )}
-                                <span>Commencer</span>
                               </button>
                             )}
                           </div>
@@ -1074,7 +1065,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                           </div>
                         </div>
                         
-                        <div className="flex flex-col space-y-2 ml-4">
+                        <div className="ml-4">
                           <button
                             onClick={() => {
                               setSelectedOrder(order);
