@@ -312,5 +312,3 @@ export const stockService = {
     };
   }
 };
-
-export { stockService }
