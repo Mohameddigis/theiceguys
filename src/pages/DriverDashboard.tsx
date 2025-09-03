@@ -463,15 +463,16 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   };
 
   // Séparer les commandes par priorité
-  const sortedOrders = sortOrdersByPriority(orders);
+  const expressOrders = orders.filter(order => order.delivery_type === 'express');
+  const standardOrders = orders.filter(order => order.delivery_type === 'standard');
+  const sortedOrders = [...expressOrders, ...standardOrders];
 
   // Statistiques
   const stats = {
     total: orders.length,
-    express: orders.filter(o => o.delivery_type === 'express').length,
+    express: expressOrders.length,
     delivering: orders.filter(o => o.status === 'delivering').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length,
-    critical: orders.filter(o => getOrderUrgency(o).level === 'critical').length
+    confirmed: orders.filter(o => o.status === 'confirmed').length
   };
 
   if (selectedOrder) {
@@ -995,11 +996,9 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                                 {updatingStatus === order.id ? (
                                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 ) : (
-                                  <>
-                                    <Truck className="h-3 w-3" />
-                                    <span>Commencer</span>
-                                  </>
+                                  <Truck className="h-3 w-3" />
                                 )}
+                                <span>Commencer</span>
                               </button>
                             )}
                           </div>
@@ -1051,10 +1050,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="font-medium text-slate-900">Livrée le</p>
-                              <p className="text-slate-600">
-                                {new Date(order.updated_at).toLocaleDateString('fr-FR')} à{' '}
-                                {new Date(order.updated_at).toLocaleTimeString('fr-FR')}
-                              </p>
+                              <p className="text-slate-600">{new Date(order.updated_at).toLocaleDateString('fr-FR')} à {new Date(order.updated_at).toLocaleTimeString('fr-FR')}</p>
                             </div>
                             
                             <div className="bg-slate-50 rounded-lg p-3">
