@@ -1082,7 +1082,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             setSelectedOrder(order);
                             setTimeout(scrollToTop, 100);
                           }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            <LucideIcons.CheckCircle className="h-3 w-3" />
                         >
                           Voir détails
                         </button>
