@@ -22,10 +22,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [showReceptionModal, setShowReceptionModal] = useState(false);
   const [processingReception, setProcessingReception] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'delivered'>('active');
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
+  const [selectedOrderForModal, setSelectedOrderForModal] = useState<Order | null>(null);
   const [modalMode, setModalMode] = useState<'deliver' | 'cancel'>('deliver');
   const [showModal, setShowModal] = useState(false);
-  const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -200,7 +200,23 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     // Si le statut est "delivered", ouvrir le modal de réception
     if (newStatus === 'delivered') {
-      setShowReceptionModal(true);
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        setSelectedOrderForModal(order);
+        setModalMode('deliver');
+        setShowModal(true);
+      }
+      return;
+    }
+    
+    // Si le statut est "cancelled", ouvrir le modal d'annulation
+    if (newStatus === 'cancelled') {
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        setSelectedOrderForModal(order);
+        setModalMode('cancel');
+        setShowModal(true);
+      }
       return;
     }
 
@@ -310,8 +326,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
       // 9. Recharger les commandes et fermer le modal
       await loadOrders();
       await loadDeliveredOrders();
-      setShowReceptionModal(false);
-      setSelectedOrder(null);
+      setShowModal(false);
+      setSelectedOrderForModal(null);
       
       alert('✅ Livraison confirmée avec succès ! Le bon de réception a été envoyé au client.');
       
@@ -700,7 +716,11 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Actions rapides</h3>
                     <div className="space-y-3">
                       <button
-                        onClick={() => handleDownloadPDF(selectedOrder)}
+                            : status === 'delivered'
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : status === 'cancelled'
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
                         <Download className="h-5 w-5" />
@@ -735,6 +755,47 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             </div>
           </div>
         </div>
+        
+        {/* Modal de livraison/annulation */}
+        {showModal && selectedOrderForModal && (
+          <DeliveryModal
+            isOpen={showModal}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedOrderForModal(null);
+            }}
+            order={selectedOrderForModal}
+            onSuccess={() => {
+        {showModal && selectedOrderForModal && modalMode === 'deliver' && (
+              loadDeliveredOrders();
+            order={selectedOrderForModal}
+              setSelectedOrderForModal(null);
+            onClose={() => {
+              setShowModal(false);
+              setSelectedOrderForModal(null);
+            }}
+            mode={modalMode}
+          />
+        )}
+        
+        {/* Modal général pour livraison/annulation */}
+        {showModal && selectedOrderForModal && (
+          <DeliveryModal
+            isOpen={showModal}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedOrderForModal(null);
+            }}
+            order={selectedOrderForModal}
+            onSuccess={() => {
+              loadOrders();
+              loadDeliveredOrders();
+              setShowModal(false);
+              setSelectedOrderForModal(null);
+            }}
+            mode={modalMode}
+          />
+        )}
       </div>
     );
   }
