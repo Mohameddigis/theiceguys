@@ -1742,10 +1742,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                                       </span>
                                     </div>
                                     <div className="text-right">
-                                      <p className="font-semibold">
-                                        {assignment.quantity_remaining}/{assignment.quantity_assigned}
-                                      </p>
-                                      <p className="text-xs text-slate-500">restant/assigné</p>
+                                      <div className="text-sm font-medium text-slate-900">
+                                        {assignment.quantity_assigned * parseInt(assignment.package_size)}kg assignés (soit {assignment.quantity_assigned} unités)
+                                      </div>
+                                      <div className="text-sm text-slate-600">
+                                        {assignment.quantity_remaining * parseInt(assignment.package_size)}kg restants (soit {assignment.quantity_remaining} unités)
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
