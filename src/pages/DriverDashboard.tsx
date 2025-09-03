@@ -194,33 +194,23 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
-    // Si le statut est "delivered", ouvrir le modal de livraison
-    if (newStatus === 'delivered') {
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        setSelectedOrderForModal(order);
-        setModalMode('deliver');
-        setShowModal(true);
-      }
-      return;
-    }
-    
-    // Si le statut est "cancelled", ouvrir le modal d'annulation
-    if (newStatus === 'cancelled') {
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        setSelectedOrderForModal(order);
-        setModalMode('cancel');
-        setShowModal(true);
-      }
-      return;
-    }
-
     try {
       setUpdatingStatus(orderId);
       
-      // Mettre à jour le statut
-      await driverService.updateOrderStatus(orderId, newStatus);
+      // Mettre à jour le statut avec l'heure actuelle
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          ...(newStatus === 'delivered' && { delivered_at: new Date().toISOString() }),
+          ...(newStatus === 'cancelled' && { cancelled_at: new Date().toISOString() })
+        })
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) throw error;
       
       // Si la commande est livrée, enregistrer la position
       if (newStatus === 'delivered') {
@@ -235,11 +225,100 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
       
       // Mettre à jour la commande sélectionnée si c'est celle-ci
       if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
+        setSelectedOrder({ ...selectedOrder, status: newStatus, updated_at: new Date().toISOString() });
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
       alert('Erreur lors de la mise à jour du statut');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  // Gérer la confirmation de livraison avec modal
+  const handleDeliveryConfirmation = async (deliveryData: any) => {
+    try {
+      setUpdatingStatus(deliveryData.orderId);
+      
+      // 1. Mettre à jour le statut de la commande
+      const { error: statusError } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'delivered',
+          delivered_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', deliveryData.orderId);
+
+      if (statusError) throw statusError;
+
+      // 2. Enregistrer les données de réception
+      const { error: receptionError } = await supabase
+        .from('delivery_receptions')
+        .insert({
+          order_id: deliveryData.orderId,
+          driver_id: driverId,
+          receiver_name: `${deliveryData.receiverFirstName} ${deliveryData.receiverName}`,
+          receiver_signature: deliveryData.signature,
+          amount_received: deliveryData.amountReceived,
+          payment_method: deliveryData.paymentMethod,
+          change_given: deliveryData.changeAmount || 0,
+          reception_notes: deliveryData.notes || null
+        });
+
+      if (receptionError) throw receptionError;
+
+      // 3. Enregistrer la position actuelle
+      recordCurrentLocation();
+
+      // 4. Recharger les données
+      await loadOrders();
+      await loadDeliveredOrders();
+      
+      // 5. Fermer le modal
+      setShowModal(false);
+      setSelectedOrderForModal(null);
+      
+      alert('✅ Livraison confirmée avec succès !');
+      
+    } catch (error) {
+      console.error('Erreur lors de la confirmation de livraison:', error);
+      alert('❌ Erreur lors de la confirmation de livraison');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  // Gérer l'annulation avec modal
+  const handleCancellationConfirmation = async (cancelData: any) => {
+    try {
+      setUpdatingStatus(cancelData.orderId);
+      
+      // 1. Mettre à jour le statut de la commande
+      const { error: statusError } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          cancel_reason: cancelData.reason
+        })
+        .eq('id', cancelData.orderId);
+
+      if (statusError) throw statusError;
+
+      // 2. Recharger les données
+      await loadOrders();
+      
+      // 3. Fermer le modal
+      setShowModal(false);
+      setSelectedOrderForModal(null);
+      
+      alert('❌ Commande annulée avec succès');
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation:', error);
+      alert('❌ Erreur lors de l\'annulation');
     } finally {
       setUpdatingStatus(null);
     }
@@ -936,6 +1015,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                             e.stopPropagation();
                             setSelectedOrderForModal(order);
                             setModalMode('deliver');
+                            setSelectedOrderForModal(order);
+                            setModalMode('deliver');
                             setShowModal(true);
                           }}
                           disabled={order.status === 'delivered' || updatingStatus === order.id}
@@ -952,6 +1033,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            setSelectedOrderForModal(order);
+                            setModalMode('cancel');
                             setSelectedOrderForModal(order);
                             setModalMode('cancel');
                             setShowModal(true);
@@ -1048,12 +1131,7 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
             setSelectedOrderForModal(null);
           }}
           order={selectedOrderForModal}
-          onConfirm={() => {
-            loadOrders();
-            loadDeliveredOrders();
-            setShowModal(false);
-            setSelectedOrderForModal(null);
-          }}
+          onConfirm={modalMode === 'deliver' ? handleDeliveryConfirmation : handleCancellationConfirmation}
           type={modalMode}
         />
       )}

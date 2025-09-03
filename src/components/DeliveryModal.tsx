@@ -110,6 +110,12 @@ export default function DeliveryModal({ isOpen, onClose, order, onConfirm, type 
 
   const handleSubmit = () => {
     if (type === 'deliver') {
+      // Valider les données de livraison
+      if (!receiverName.trim() || !receiverFirstName.trim() || !signature || !photo) {
+        alert('Veuillez remplir tous les champs obligatoires');
+        return;
+      }
+      
       const deliveryData = {
         receiverName,
         receiverFirstName,
@@ -125,6 +131,12 @@ export default function DeliveryModal({ isOpen, onClose, order, onConfirm, type 
       };
       onConfirm(deliveryData);
     } else {
+      // Valider les données d'annulation
+      if (!cancelReason.trim() || cancelReason.length < 10 || !photo) {
+        alert('Veuillez remplir la raison (min 10 caractères) et ajouter une photo');
+        return;
+      }
+      
       const cancelData = {
         reason: cancelReason,
         photo,
@@ -132,7 +144,6 @@ export default function DeliveryModal({ isOpen, onClose, order, onConfirm, type 
       };
       onConfirm(cancelData);
     }
-    onClose();
   };
 
   const canProceedToNextStep = () => {
