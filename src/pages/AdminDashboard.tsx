@@ -568,7 +568,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   Actions administrateur :
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {(['confirmed', 'preparing', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
+                  {(['confirmed', 'delivering', 'delivered', 'cancelled'] as const).map((status) => (
                     <button
                       key={status}
                       onClick={() => updateOrderStatus(selectedOrder.id, status)}
