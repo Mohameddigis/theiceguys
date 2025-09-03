@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Upload, Check, AlertCircle, Signature } from 'lucide-react';
+import { X, Camera, Upload, Check, AlertCircle, FileSignature as Signature } from 'lucide-react';
 
 interface DeliveryModalProps {
   isOpen: boolean;
