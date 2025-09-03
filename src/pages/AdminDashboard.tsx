@@ -1193,6 +1193,102 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
         )}
       </div>
 
+      {/* Modal d'assignation */}
+      {showAssignModal && orderToAssign && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Assigner la commande {orderToAssign.order_number}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setOrderToAssign(null);
+                  }}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Client :</strong> {orderToAssign.customer?.name}
+                </p>
+                <p className="text-sm text-blue-800">
+                  <strong>Adresse :</strong> {orderToAssign.delivery_address}
+                </p>
+                <p className="text-sm text-blue-800">
+                  <strong>Total :</strong> {orderToAssign.total} MAD
+                </p>
+                {orderToAssign.delivery_type === 'express' && (
+                  <p className="text-sm text-orange-600 font-semibold">
+                    ⚡ Livraison Express - Priorité
+                  </p>
+                )}
+              </div>
+              
+              <div className="space-y-2 mb-6">
+                <h4 className="font-medium text-slate-900">Sélectionner un livreur :</h4>
+                {drivers
+                  .filter(driver => driver.is_active && driver.current_status === 'available')
+                  .map(driver => (
+                    <button
+                      key={driver.id}
+                      onClick={() => handleAssignDriver(orderToAssign.id, driver.id)}
+                      disabled={assigningOrder}
+                      className="w-full text-left p-3 bg-slate-50 hover:bg-green-50 rounded-lg border border-slate-200 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-slate-900">{driver.name}</p>
+                          <p className="text-sm text-slate-600">{driver.phone}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                            Disponible
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {orders.filter(o => o.assigned_driver_id === driver.id && ['confirmed', 'delivering'].includes(o.status)).length} commande(s)
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                
+                {drivers.filter(driver => driver.is_active && driver.current_status === 'available').length === 0 && (
+                  <div className="text-center py-4 text-slate-500">
+                    <p>Aucun livreur disponible actuellement</p>
+                    <p className="text-sm">Les livreurs doivent être actifs et disponibles</p>
+                  </div>
+                )}
+              </div>
+              
+              {assigningOrder && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="text-sm text-slate-600 mt-2">Attribution en cours...</p>
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setOrderToAssign(null);
+                  }}
+                  className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modals */}
       {showCreateDriver && <CreateDriverModal />}
       {showAssignDriver && <AssignDriverModal order={showAssignDriver} />}
