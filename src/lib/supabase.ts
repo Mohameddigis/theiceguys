@@ -205,6 +205,23 @@ export const orderService = {
 
     if (error) throw error;
     return data;
+  },
+
+  // Récupérer une commande par ID avec toutes les relations
+  async getOrderById(orderId: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customer:customers(*),
+        order_items(*),
+        assigned_driver:delivery_drivers(*)
+      `)
+      .eq('id', orderId)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 };
 

@@ -90,12 +90,19 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       // Mettre à jour le statut
       await orderService.updateOrderStatus(orderId, newStatus);
       
-      // Recharger les commandes
+      
+      // Si driverId est vide, on retire l'assignation
+      if (driverId === '') {
+        await driverService.assignDriverToOrder(orderId, null);
+      } else {
+        await driverService.assignDriverToOrder(orderId, driverId);
+      }
+      
       await loadOrders();
       
       // Mettre à jour la commande sélectionnée si c'est celle-ci
       if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
+        const updatedOrder = await orderService.getOrderById(orderId);
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
@@ -121,7 +128,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       alert('Livreur assigné avec succès !');
     } catch (error) {
       console.error('Erreur lors de l\'assignation du livreur:', error);
-      alert('Erreur lors de l\'assignation du livreur');
+      alert('Erreur lors de la modification de l\'assignation');
     } finally {
       setAssigningDriver(false);
     }
