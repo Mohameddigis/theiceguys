@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { LogOut, Package, Clock, CheckCircle, XCircle, Truck, MapPin, Phone, Download, RefreshCw, Navigation, User, Calendar, AlertCircle } from 'lucide-react';
 import { Order, driverService, supabase } from '../lib/supabase';
 import { generateOrderPDF } from '../utils/pdfGenerator';
+import DeliveryReceptionModal from '../components/DeliveryReceptionModal';
+import { generateReceptionPDF } from '../utils/receptionPdfGenerator';
+import { stockService } from '../lib/stockService';
 
 interface DriverDashboardProps {
   driverId: string;
@@ -15,6 +18,8 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [driverStatus, setDriverStatus] = useState<'offline' | 'available' | 'busy' | 'on_break'>('available');
+  const [showReceptionModal, setShowReceptionModal] = useState(false);
+  const [processingReception, setProcessingReception] = useState(false);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -77,6 +82,12 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+    // Si le statut est "delivered", ouvrir le modal de réception
+    if (newStatus === 'delivered') {
+      setShowReceptionModal(true);
+      return;
+    }
+
     try {
       setUpdatingStatus(orderId);
       
@@ -101,6 +112,147 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
     } finally {
       setUpdatingStatus(null);
     }
+  };
+
+  const handleReceptionComplete = async (receptionData: {
+    receiverName: string;
+    signature: string;
+    amountReceived: number;
+    paymentMethod: 'cash' | 'card' | 'transfer';
+    changeGiven: number;
+    notes?: string;
+  }) => {
+    if (!selectedOrder) return;
+
+    try {
+      setProcessingReception(true);
+
+      // 1. Enregistrer la réception en base
+      const { data: reception, error: receptionError } = await supabase
+        .from('delivery_receptions')
+        .insert([{
+          order_id: selectedOrder.id,
+          driver_id: driverId,
+          receiver_name: receptionData.receiverName,
+          receiver_signature: receptionData.signature,
+          amount_received: receptionData.amountReceived,
+          payment_method: receptionData.paymentMethod,
+          change_given: receptionData.changeGiven,
+          reception_notes: receptionData.notes
+        }])
+        .select()
+        .single();
+
+      if (receptionError) throw receptionError;
+
+      // 2. Mettre à jour le statut de la commande
+      await driverService.updateOrderStatus(selectedOrder.id, 'delivered');
+
+      // 3. Marquer la commande comme ayant une réception
+      await supabase
+        .from('orders')
+        .update({ has_reception: true })
+        .eq('id', selectedOrder.id);
+
+      // 4. Décompter le stock du livreur
+      await deductDriverStock(selectedOrder);
+
+      // 5. Générer le PDF de réception
+      const pdfBlob = await generateReceptionPDF(selectedOrder, {
+        ...receptionData,
+        receptionDate: new Date().toISOString()
+      });
+
+      // 6. Convertir le PDF en base64 pour l'email
+      const pdfBase64 = await blobToBase64(pdfBlob);
+
+      // 7. Envoyer l'email avec le bon de réception
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-reception-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerEmail: selectedOrder.customer?.email,
+          customerName: selectedOrder.customer?.name,
+          orderNumber: selectedOrder.order_number,
+          receptionData: {
+            ...receptionData,
+            receptionDate: new Date().toISOString()
+          },
+          pdfBase64: pdfBase64.split(',')[1] // Remove data:application/pdf;base64, prefix
+        })
+      });
+
+      // 8. Enregistrer la position de livraison
+      recordCurrentLocation();
+
+      // 9. Recharger les commandes et fermer le modal
+      await loadOrders();
+      setShowReceptionModal(false);
+      setSelectedOrder(null);
+      
+      alert('✅ Livraison confirmée avec succès ! Le bon de réception a été envoyé au client.');
+      
+    } catch (error) {
+      console.error('Erreur lors de la confirmation de réception:', error);
+      alert('❌ Erreur lors de la confirmation de réception. Veuillez réessayer.');
+    } finally {
+      setProcessingReception(false);
+    }
+  };
+
+  const deductDriverStock = async (order: Order) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Récupérer les assignations du livreur pour aujourd'hui
+      const { data: assignments, error } = await supabase
+        .from('driver_stock_assignments')
+        .select('*')
+        .eq('driver_id', driverId)
+        .eq('assignment_date', today);
+
+      if (error) throw error;
+
+      // Décompter les quantités livrées
+      for (const item of order.order_items || []) {
+        const assignment = assignments?.find(a => 
+          a.ice_type === item.ice_type && a.package_size === item.package_size
+        );
+
+        if (assignment) {
+          const newRemaining = Math.max(0, assignment.quantity_remaining - item.quantity);
+          
+          await supabase
+            .from('driver_stock_assignments')
+            .update({ quantity_remaining: newRemaining })
+            .eq('id', assignment.id);
+
+          // Enregistrer le mouvement de stock
+          await stockService.recordStockMovement({
+            movement_type: 'delivery',
+            ice_type: item.ice_type,
+            package_size: item.package_size,
+            quantity_change: -item.quantity,
+            reference_id: order.id,
+            notes: `Livraison commande ${order.order_number}`
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déduction du stock:', error);
+    }
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
 
   const recordCurrentLocation = () => {
@@ -681,7 +833,10 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
                       
                       {order.status === 'delivering' && (
                         <button
-                          onClick={() => updateOrderStatus(order.id, 'delivered')}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            updateOrderStatus(order.id, 'delivered');
+                          }}
                           disabled={updatingStatus === order.id}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
                         >
@@ -712,6 +867,27 @@ function DriverDashboard({ driverId, driverName, onLogout }: DriverDashboardProp
           </div>
         )}
       </div>
+
+      {/* Modal de réception */}
+      {showReceptionModal && selectedOrder && (
+        <DeliveryReceptionModal
+          order={selectedOrder}
+          driverId={driverId}
+          onClose={() => setShowReceptionModal(false)}
+          onComplete={handleReceptionComplete}
+        />
+      )}
+
+      {/* Loading overlay pour le traitement de la réception */}
+      {processingReception && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-lg font-medium text-slate-900">Traitement de la réception...</p>
+            <p className="text-sm text-slate-600">Génération du bon de réception et envoi par email</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

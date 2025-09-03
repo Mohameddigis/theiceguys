@@ -87,6 +87,19 @@ export interface OrderItem {
   created_at: string;
 }
 
+export interface DeliveryReception {
+  id: string;
+  order_id: string;
+  driver_id: string;
+  receiver_name: string;
+  receiver_signature: string;
+  amount_received: number;
+  payment_method: 'cash' | 'card' | 'transfer';
+  change_given: number;
+  reception_notes?: string;
+  created_at: string;
+}
+
 // Fonctions utilitaires pour les commandes
 export const orderService = {
   // Créer un client

@@ -213,11 +213,13 @@ export const stockService = {
   },
 
   async recordStockMovement(movement: Omit<StockMovement, 'id' | 'created_at' | 'created_by'>): Promise<void> {
+    const { data: user } = await supabase.auth.getUser();
+    
     const { error } = await supabaseAdmin
       .from('stock_movements')
       .insert({
         ...movement,
-        created_by: (await supabase.auth.getUser()).data.user?.id
+        created_by: user.user?.id
       });
 
     if (error) throw error;
@@ -310,3 +312,5 @@ export const stockService = {
     };
   }
 };
+
+export { stockService }
