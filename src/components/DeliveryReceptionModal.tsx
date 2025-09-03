@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, User, CreditCard, Banknote, Smartphone, FileText, CheckCircle, Signature } from 'lucide-react';
+import { X, User, CreditCard, Banknote, Smartphone, FileText, CheckCircle, FileSignature as Signature } from 'lucide-react';
 import { Order } from '../lib/supabase';
 
 interface DeliveryReceptionModalProps {
