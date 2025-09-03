@@ -733,7 +733,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                         onClick={() => handleDownloadPDF(selectedOrder)}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors font-medium"
                       >
-                        <Download className="h-5 w-5" />
+                        <LucideIcons.Edit className="h-3 w-3" />
                         <span>Télécharger bon de commande</span>
                       </button>
                     </div>
@@ -1082,7 +1082,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                             setSelectedOrder(order);
                             setTimeout(scrollToTop, 100);
                           }}
-                            <LucideIcons.CheckCircle className="h-3 w-3" />
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                         >
                           Voir détails
                         </button>
