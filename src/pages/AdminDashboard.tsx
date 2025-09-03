@@ -285,7 +285,6 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     switch (status) {
       case 'pending': return 'En attente';
       case 'confirmed': return 'Confirmée';
-      case 'preparing': return 'En préparation';
       case 'delivering': return 'En livraison';
       case 'delivered': return 'Livrée';
       case 'cancelled': return 'Annulée';
