@@ -43,7 +43,6 @@ function Blog() {
         <p>Le choix dépend de plusieurs facteurs : type d'établissement, clientèle cible, budget, et volume de consommation. Contactez-nous pour des conseils personnalisés.</p>
       `,
       author: 'Équipe The Ice Guys',
-      author: 'Équipe The Ice Guys',
       date: '2024-01-15',
       readTime: '5 min',
       category: 'Guide Professionnel',
@@ -72,7 +71,6 @@ function Blog() {
         <h3>Bonnes Pratiques</h3>
         <p>Évitez les variations de température, utilisez des contenants propres, et respectez la règle du "premier entré, premier sorti" pour une rotation optimale.</p>
       `,
-      author: 'Expert The Ice Guys',
       author: 'Expert The Ice Guys',
       date: '2024-01-10',
       readTime: '4 min',
@@ -175,7 +173,6 @@ function Blog() {
         <h3>Engagement Communautaire</h3>
         <p>Nous soutenons les initiatives locales de préservation de l'environnement à Marrakech et sensibilisons nos clients aux bonnes pratiques.</p>
       `,
-      author: 'Direction The Ice Guys',
       author: 'Direction The Ice Guys',
       date: '2023-12-20',
       readTime: '4 min',

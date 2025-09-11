@@ -66,6 +66,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
       description: 'Glaçons en forme de pépites, parfaits pour vos cocktails et boissons',
       price5kg: 30,
       price10kg: 60,
+      price10kg: 60,
       price20kg: 100,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/nugget-verre.png'
     },
@@ -75,6 +76,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
       description: 'Glaçons de forme cylindrique, idéaux pour vos événements spéciaux',
       price5kg: 35,
       price10kg: 70,
+      price10kg: 70,
       price20kg: 120,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/gourmet-verre.png'
     },
@@ -83,6 +85,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
       name: 'Glace Paillette',
       description: 'Glace en paillettes, idéale pour la présentation et le refroidissement rapide',
       price5kg: 25,
+      price10kg: 50,
       price10kg: 50,
       price20kg: 85,
       image: 'https://kzwjpsztcfrrikbsjsed.supabase.co/storage/v1/object/public/assets/glace-en-paillettes-110145.jpg'
@@ -545,6 +548,10 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
                           <span className="font-semibold">{iceType.price5kg} MAD</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
+                          <span>Sac 10kg</span>
+                          <span className="font-semibold">{iceType.price10kg} MAD</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
                           <span>Sac 20kg</span>
                           <span className="font-semibold">{iceType.price20kg} MAD</span>
                         </div>
@@ -552,7 +559,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
 
                       {isSelected && selectedItem && (
                         <div className="space-y-3 pt-4 border-t border-slate-200">
-                          {(['5kg', '20kg'] as const).map((size) => (
+                          {(['5kg', '10kg', '20kg'] as const).map((size) => (
                             <div key={size} className="flex items-center justify-between">
                               <span className="text-sm font-medium">Sacs {size}:</span>
                               <div className="flex items-center space-x-2">
@@ -596,6 +603,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
                         <span className="font-semibold">{item.iceType.name}</span>
                         <div className="text-sm text-slate-600">
                           {item.quantities['5kg'] > 0 && `${item.quantities['5kg']}x 5kg `}
+                          {item.quantities['10kg'] > 0 && `${item.quantities['10kg']}x 10kg `}
                           {item.quantities['20kg'] > 0 && `${item.quantities['20kg']}x 20kg`}
                         </div>
                       </div>
@@ -889,6 +897,7 @@ function ProfessionalOrderPage({ onBack, onOrderComplete }: ProfessionalOrderPag
                           <span className="font-medium">{item.iceType.name}</span>
                           <div className="text-sm text-slate-600">
                             {item.quantities['5kg'] > 0 && `${item.quantities['5kg']}x 5kg (${item.quantities['5kg'] * item.iceType.price5kg} MAD) `}
+                            {item.quantities['10kg'] > 0 && `${item.quantities['10kg']}x 10kg (${item.quantities['10kg'] * item.iceType.price10kg} MAD) `}
                             {item.quantities['20kg'] > 0 && `${item.quantities['20kg']}x 20kg (${item.quantities['20kg'] * item.iceType.price20kg} MAD) `}
                           </div>
                         </div>
